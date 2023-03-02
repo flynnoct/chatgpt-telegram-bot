@@ -77,3 +77,9 @@ Now you can start a private chat to the bot or add the bot to your group chat. E
 ## License
 
 [MIT](LICENSE.md)
+
+## Buy me a coffee
+
+If you like this project, you can also buy me a coffee. ❤️
+
+Click [Alipay](donate_code/alipay.jpg) to donate via Alipay.
