@@ -35,3 +35,7 @@ class UserContext:
             {"role": source, "content": message}
         )
         
+    def clear_context(self, clear_time):
+        self.__latestTime = clear_time
+        self.__messageList.clear()
+        
