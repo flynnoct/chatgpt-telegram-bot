@@ -20,11 +20,11 @@ class MessageManager:
         else:
             self.userDict[user].update(t, message, "user")
             
-        answer = self.__sendMessage(self.userDict[user].messageList)
+        answer = self.__sendMessage(user, self.userDict[user].messageList)
         self.userDict[user].update(t, answer, "assistant")
         return answer
             
-    def __sendMessage(self, messageList):
-        ans = openai_parser.get_response(messageList)
+    def __sendMessage(self, user, messageList):
+        ans = openai_parser.get_response(user, messageList)
         return ans
     
