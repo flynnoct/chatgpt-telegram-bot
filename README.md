@@ -29,7 +29,7 @@ You can add the bot to a group chat. However it will only reply the messages wit
 2. Create an OpenAI account and get the API key.
 3. A VM or a server with Python 3 is needed to run the bot.
 
-> Note: You should disable the privacy mode of the bot. Otherwise the bot will not receive the messages from the group chat. You can do this by sending `/setprivacy` to [@BotFather](https://t.me/BotFather). 
+> **Note**: You should disable the privacy mode of the bot. Otherwise the bot will not receive the messages from the group chat. You can do this by sending `/setprivacy` to [@BotFather](https://t.me/BotFather). 
 
 ### Deploy
 
