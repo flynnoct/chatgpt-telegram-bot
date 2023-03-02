@@ -20,7 +20,7 @@ class MessageManager:
             self.userDict[id].update(t, message, "user")
            
         # send user info for statistics 
-        answer = self.__sendMessage(user, self.userDict[user].messageList)
+        answer = self.__sendMessage(user, self.userDict[id].messageList)
         self.userDict[id].update(t, answer, "assistant")
         return answer
     
