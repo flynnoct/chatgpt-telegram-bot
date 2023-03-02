@@ -69,7 +69,10 @@ Run the bot.
 ```bash
 nohup python3 telegram_message_parser.py &
 ```
-
+or
+```bash
+pm2 start telegram_message_parser.py
+```
 > Note: A launch script will be added later.
 
 Now you can start a private chat to the bot or add the bot to your group chat. Enjoy.
