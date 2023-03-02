@@ -15,7 +15,6 @@ __status__ = Dev
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 import json
-# from openai_parser import OpenAIParser
 from message_manager import MessageManager
 
 
@@ -28,9 +27,6 @@ class TelegramMessageParser:
         self.bot = ApplicationBuilder().token(config_dict["telegram_bot_token"]).build()
         # add handlers
         self.add_handlers()
-
-        # init openai
-        # self.openai_parser = OpenAIParser()
 
         # init MessageManager
         self.message_manager = MessageManager()
@@ -59,6 +55,14 @@ class TelegramMessageParser:
         # group chat without @username
         if (update.effective_chat.type == "group" or update.effective_chat.type == "supergroup") and not ("@" + context.bot.username) in message:
             return
+        # remove @username
+        if "@" + context.bot.username in message:
+            message = message.replace("@" + context.bot.username, "")
+        # sending typing action
+        await context.bot.send_chat_action(
+            chat_id=update.effective_chat.id,
+            action="typing"
+        )
         # send message to openai
         response = self.message_manager.get_response(str(update.effective_user.id), message)
         # send response to user
