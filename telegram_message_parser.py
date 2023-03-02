@@ -38,18 +38,12 @@ class TelegramMessageParser:
         self.bot.add_handler(CommandHandler("start", self.start))
         self.bot.add_handler(CommandHandler("clear", self.clear_context))
         self.bot.add_handler(CommandHandler("getid", self.get_user_id))
+        self.bot.add_handler(MessageHandler(filters.PHOTO | filters.AUDIO | filters.VIDEO, self.chat_file))
         self.bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), self.chat))
         self.bot.add_handler(MessageHandler(filters.COMMAND, self.unknown))
 
     # chat messages
     async def chat(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        # check if user is allowed to use this bot
-        if not self.check_user_allowed(str(update.effective_user.id)):
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text="Sorry, you are not allowed to use this bot. Contact the bot owner for more information."
-            )
-            return
         # get message
         message = update.effective_message.text
         # group chat without @username
@@ -58,6 +52,13 @@ class TelegramMessageParser:
         # remove @username
         if "@" + context.bot.username in message:
             message = message.replace("@" + context.bot.username, "")
+        # check if user is allowed to use this bot
+        if not self.check_user_allowed(str(update.effective_user.id)):
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="Sorry, you are not allowed to use this bot. Contact the bot owner for more information."
+            )
+            return
         # sending typing action
         await context.bot.send_chat_action(
             chat_id=update.effective_chat.id,
@@ -65,17 +66,40 @@ class TelegramMessageParser:
         )
         # send message to openai
         response = self.message_manager.get_response(str(update.effective_user.id), message)
-        # send response to user
+        # reply response to user
+        # await context.bot.send_message(
+        #     chat_id=update.effective_chat.id,
+        #     text=response
+        # )
+        await update.message.reply_text(response)
+
+    # file and photo messages
+    async def chat_file(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        # get message
+        message = update.effective_message.text
+        # group chat without @username
+        if (update.effective_chat.type == "group" or update.effective_chat.type == "supergroup") and not ("@" + context.bot.username) in message:
+            return
+        # remove @username
+        if (not message is None) and "@" + context.bot.username in message:
+            message = message.replace("@" + context.bot.username, "")
+        # check if user is allowed to use this bot
+        if not self.check_user_allowed(str(update.effective_user.id)):
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="Sorry, you are not allowed to use this bot. Contact the bot owner for more information."
+            )
+            return
         await context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text=response
-        )
+                chat_id=update.effective_chat.id,
+                text="Sorry, I can't handle files and photos yet."
+            )
 
     # start command
     async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="Hello, I'm your ChatGPT bot."
+            text="Hello, I'm a ChatGPT bot."
         )
 
     # clear context command
