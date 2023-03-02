@@ -40,7 +40,7 @@ class TelegramMessageParser:
 
     def add_handlers(self):
         self.bot.add_handler(CommandHandler("start", self.start))
-        self.bot.add_handler(CommandHandler("clear_context", self.clear_context))
+        self.bot.add_handler(CommandHandler("clear", self.clear_context))
         self.bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), self.chat))
         self.bot.add_handler(MessageHandler(filters.COMMAND, self.unknown))
 
