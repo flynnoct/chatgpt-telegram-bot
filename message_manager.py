@@ -25,7 +25,7 @@ class MessageManager:
     
     def clear_context(self, user):
         try:
-            self.userDict[user].clear_context()
+            self.userDict[user].clear_context(time.time())
         except Exception as e:
             print(e)
             
