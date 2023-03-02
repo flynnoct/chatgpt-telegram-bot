@@ -75,4 +75,4 @@ Now you can start a private chat to the bot or add the bot to your group chat. E
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE.md)
