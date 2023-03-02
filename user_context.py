@@ -35,3 +35,6 @@ class UserContext:
             {"role": source, "content": message}
         )
         
+    def clear_context(self):
+        self.__messageList.clear()
+        

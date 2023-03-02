@@ -1,7 +1,7 @@
 {
 {
     "openai_api_key": "<YOUR_OPENAI_API_KEY_HERE>",
-    "telegram_bot_token": "<YOUR_TELEGRAM_BOT_TOKEN_HERE",
+    "telegram_bot_token": "<YOUR_TELEGRAM_BOT_TOKEN_HERE>",
     "allowed_users": [
         "<USER_ID_1>",
         "<USER_ID_2>"

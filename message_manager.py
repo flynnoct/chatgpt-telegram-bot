@@ -15,7 +15,6 @@ class MessageManager:
         
         if user not in self.userDict:
             # new user
-            print("here is new user")
             self.userDict[user] = UserContext(t, message)
         else:
             self.userDict[user].update(t, message, "user")
@@ -23,6 +22,12 @@ class MessageManager:
         answer = self.__sendMessage(user, self.userDict[user].messageList)
         self.userDict[user].update(t, answer, "assistant")
         return answer
+    
+    def clear_context(self, user):
+        try:
+            self.userDict[user].clear_context()
+        except Exception as e:
+            print(e)
             
     def __sendMessage(self, user, messageList):
         ans = self.openai_parser.get_response(user, messageList)
