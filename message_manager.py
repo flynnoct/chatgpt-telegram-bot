@@ -11,6 +11,7 @@ class MessageManager:
         self.openai_parser = OpenAIParser()
     
     def get_response(self, id, user, message):
+
         t = time.time()
         
         if id not in self.userDict:
