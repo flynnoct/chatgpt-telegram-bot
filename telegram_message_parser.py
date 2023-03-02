@@ -106,7 +106,7 @@ class TelegramMessageParser:
 
     # clear context command
     async def clear_context(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        self.message_manager.clear_context(str(update.effective_user.id))
+        self.message_manager.clear_context(str(update.effective_chat.id))
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text="Context cleared."
