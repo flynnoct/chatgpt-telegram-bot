@@ -1,5 +1,5 @@
 import time
-from userContext import UserContext
+from user_context import UserContext
 from openai_parser import OpenAIParser
 
 class MessageManager:
@@ -8,9 +8,9 @@ class MessageManager:
     openai_parser = None
     
     def __init__(self):
-        pass
+        self.openai_parser = OpenAIParser()
     
-    def recvMessage(self, user, message):
+    def get_response(self, user, message):
         t = time.time()
         
         if user not in self.userDict:
@@ -25,6 +25,6 @@ class MessageManager:
         return answer
             
     def __sendMessage(self, user, messageList):
-        ans = openai_parser.get_response(user, messageList)
+        ans = self.openai_parser.get_response(user, messageList)
         return ans
     
