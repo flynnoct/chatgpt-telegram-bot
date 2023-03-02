@@ -3,15 +3,15 @@ import copy
 
 class UserContext:
     
-    latestTime = 0
-    messageList = []
+    __latestTime = 0
+    __messageList = []
     config_dict = {}
     
     def __init__(self, contactTime, message):
         # first message
-        self.messageList = copy.deepcopy([])
-        self.latestTime = contactTime
-        self.messageList.append(
+        self.__messageList = copy.deepcopy([])
+        self.__latestTime = contactTime
+        self.__messageList.append(
             {"role": "user", "content": message}
         )
         # load config
@@ -21,13 +21,17 @@ class UserContext:
     def __repr__(self):
         return str(self.messageList) + '\n'
     
+    @property
+    def messageList(self):
+        return self.__messageList
+    
     def update(self, contactTime, message, source):
         # check time
-        if (source == "user") and (contactTime - self.latestTime > self.config_dict["wait_time"]) :
+        if (source == "user") and (contactTime - self.__latestTime > self.config_dict["wait_time"]) :
             # refresh message list
-            self.messageList.clear()
-        self.latestTime = contactTime
-        self.messageList.append(
+            self.__messageList.clear()
+        self.__latestTime = contactTime
+        self.__messageList.append(
             {"role": source, "content": message}
         )
         

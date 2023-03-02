@@ -1,9 +1,11 @@
 import time
 from userContext import UserContext
+from openai_parser import OpenAIParser
 
 class MessageManager:
     
     userDict = {}
+    openai_parser = None
     
     def __init__(self):
         pass
@@ -18,11 +20,11 @@ class MessageManager:
         else:
             self.userDict[user].update(t, message, "user")
             
-        answer = self.__sendMessage(user)
+        answer = self.__sendMessage(self.userDict[user].messageList)
         self.userDict[user].update(t, answer, "assistant")
-        print(self.userDict[user])
+        return answer
             
-    def __sendMessage(self, user):
-        ans = "0.0"
+    def __sendMessage(self, messageList):
+        ans = openai_parser.get_response(messageList)
         return ans
     
