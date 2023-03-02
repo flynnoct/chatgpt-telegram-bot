@@ -40,6 +40,7 @@ class TelegramMessageParser:
 
     def add_handlers(self):
         self.bot.add_handler(CommandHandler("start", self.start))
+        self.bot.add_handler(CommandHandler("clear_context", self.clear_context))
         self.bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), self.chat))
         self.bot.add_handler(MessageHandler(filters.COMMAND, self.unknown))
 
@@ -67,6 +68,14 @@ class TelegramMessageParser:
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text="Hello, I'm your ChatGPT bot."
+        )
+
+    # clear context command
+    async def clear_context(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.message_manager.clear_context(str(update.effective_user.id))
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Context cleared."
         )
     
     # unknown command
