@@ -47,11 +47,13 @@ class TelegramMessageParser:
         # get message
         message = update.effective_message.text
         # group chat without @username
-        if (update.effective_chat.type == "group" or update.effective_chat.type == "supergroup") and not ("@" + context.bot.username) in message:
-            return
-        # remove @username
-        if "@" + context.bot.username in message:
-            message = message.replace("@" + context.bot.username, "")
+        if update.effective_chat.type == "group" or update.effective_chat.type == "supergroup":
+            if not ("@" + context.bot.username) in message:
+                return
+            else:
+                # remove @username
+                message = message.replace("@" + context.bot.username, "")
+
         # check if user is allowed to use this bot
         if not self.check_user_allowed(str(update.effective_user.id)):
             await context.bot.send_message(
@@ -65,7 +67,7 @@ class TelegramMessageParser:
             action="typing"
         )
         # send message to openai
-        response = self.message_manager.get_response(str(update.effective_user.id), message)
+        response = self.message_manager.get_response(str(update.effective_chat.id), str(update.effective_user.id), message)
         # reply response to user
         # await context.bot.send_message(
         #     chat_id=update.effective_chat.id,

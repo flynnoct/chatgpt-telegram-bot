@@ -10,22 +10,24 @@ class MessageManager:
     def __init__(self):
         self.openai_parser = OpenAIParser()
     
-    def get_response(self, user, message):
+    def get_response(self, id, user, message):
+
         t = time.time()
         
-        if user not in self.userDict:
+        if id not in self.userDict:
             # new user
-            self.userDict[user] = UserContext(t, message)
+            self.userDict[id] = UserContext(t, message)
         else:
-            self.userDict[user].update(t, message, "user")
-            
-        answer = self.__sendMessage(user, self.userDict[user].messageList)
-        self.userDict[user].update(t, answer, "assistant")
+            self.userDict[id].update(t, message, "user")
+           
+        # send user info for statistics 
+        answer = self.__sendMessage(user, self.userDict[id].messageList)
+        self.userDict[id].update(t, answer, "assistant")
         return answer
     
-    def clear_context(self, user):
+    def clear_context(self, id):
         try:
-            self.userDict[user].clear_context(time.time())
+            self.userDict[id].clear_context(time.time())
         except Exception as e:
             print(e)
             
