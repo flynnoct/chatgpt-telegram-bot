@@ -56,6 +56,9 @@ class TelegramMessageParser:
             return
         # get message
         message = update.effective_message.text
+        # group chat without @username
+        if (update.effective_chat.type == "group" or update.effective_chat.type == "supergroup") and not ("@" + context.bot.username) in message:
+            return
         # send message to openai
         response = self.message_manager.get_response(str(update.effective_user.id), message)
         # send response to user

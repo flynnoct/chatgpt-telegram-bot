@@ -37,10 +37,13 @@ class OpenAIParser:
     
     def get_response(self, userid, context_messages):
         context_messages.insert(0, {"role": "system", "content": "You are a helpful assistant"})
-        response = openai.ChatCompletion.create(model = "gpt-3.5-turbo-0301",
-                                            messages = context_messages)
-        self.update_usage(response["usage"]["total_tokens"], userid)
-        return response["choices"][0]["message"]["content"]
+        try:
+            response = openai.ChatCompletion.create(model = "gpt-3.5-turbo-0301",
+                                                messages = context_messages)
+            self.update_usage(response["usage"]["total_tokens"], userid)
+            return response["choices"][0]["message"]["content"]
+        except Exception as e:
+            return str(e) + "\nSorry, I am not feeling well. Please try again."
     
     def update_usage(self, total_tokens, userid):
         # get time
