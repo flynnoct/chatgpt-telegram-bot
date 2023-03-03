@@ -88,7 +88,7 @@ class TelegramMessageParser:
         # )
         await update.message.reply_text(response)
 
-    # voice messag in private chat, speech to text with Whisper API and process with ChatGPT
+    # voice message in private chat, speech to text with Whisper API and process with ChatGPT
     async def chat_voice(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         # check if it's a private chat
         if not update.effective_chat.type == "private":
@@ -108,28 +108,26 @@ class TelegramMessageParser:
             action="typing"
         )
         
-        file_id = update.effective_message.voice.file_id
-        new_file = await context.bot.get_file(file_id)
-        await new_file.download_to_drive(file_id + ".ogg")
+        try:
+            file_id = update.effective_message.voice.file_id
+            new_file = await context.bot.get_file(file_id)
+            await new_file.download_to_drive(file_id + ".ogg")
 
-        # audio = AudioSegment.from_ogg(file_id + ".ogg")
-        # print(audio.duration_seconds)
-        # if audio.duration_seconds > 7:
-        #     await update.message.reply_text("Sorry, the voice message is too long. Please send a voice message with length less than 7 seconds.")
-        #     return
-        # audio.export(file_id + ".mp3", format="mp3")
+            file_size = os.path.getsize(file_id + ".ogg") / 1000
+            # # if < 200kB, convert to wav and send to openai
+            # if file_size > 50:
+            #     await update.message.reply_text("Sorry, the voice message is too long.")
+            #     return
 
-        file_size = os.path.getsize(file_id + ".ogg") / 1000
-        # if < 200kB, convert to wav and send to openai
-        if file_size > 50:
-            await update.message.reply_text("Sorry, the voice message is too long.")
+            subprocess.call(['ffmpeg', '-i', file_id + '.ogg', file_id + '.wav'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            with open(file_id + ".wav", "rb") as audio_file:
+                transcript = self.message_manager.get_transcript(str(update.effective_user.id), audio_file)
+            os.remove(file_id + ".ogg")
+            os.remove(file_id + ".wav")
+            
+        except Exception as e:
+            await update.message.reply_text("Sorry, something went wrong. Please try again later.")
             return
-
-        subprocess.call(['ffmpeg', '-i', file_id + '.ogg', file_id + '.wav'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        with open(file_id + ".wav", "rb") as audio_file:
-            transcript = self.message_manager.get_transcript(str(update.effective_user.id), audio_file)
-        os.remove(file_id + ".ogg")
-        os.remove(file_id + ".wav")
 
         response = self.message_manager.get_response(str(update.effective_chat.id), str(update.effective_user.id), transcript)
         await update.message.reply_text("\"" + transcript + "\"\n\n" + response)
