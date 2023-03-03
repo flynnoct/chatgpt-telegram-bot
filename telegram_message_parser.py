@@ -38,12 +38,13 @@ class TelegramMessageParser:
         self.bot.add_handler(CommandHandler("start", self.start))
         self.bot.add_handler(CommandHandler("clear", self.clear_context))
         self.bot.add_handler(CommandHandler("getid", self.get_user_id))
+        self.bot.add_handler(MessageHandler(filters.VOICE, self.chat_voice))
         self.bot.add_handler(MessageHandler(filters.PHOTO | filters.AUDIO | filters.VIDEO, self.chat_file))
-        self.bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), self.chat))
+        self.bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), self.chat_text))
         self.bot.add_handler(MessageHandler(filters.COMMAND, self.unknown))
 
     # chat messages
-    async def chat(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def chat_text(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         # get message
         message = update.effective_message.text
         # group chat without @username
@@ -74,6 +75,15 @@ class TelegramMessageParser:
         #     text=response
         # )
         await update.message.reply_text(response)
+
+    # voice message, speech to text with Whisper API and process with ChatGPT
+    async def chat_voice(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        file_id = update.effective_message.voice.file_id
+        new_file = await context.bot.get_file(file_id)
+        f = open("voice.mp3", "wb")
+        await new_file.download_to_memory(f)
+        transcript = self.message_manager.get_transcript(str(update.effective_user.id), f)
+
 
     # file and photo messages
     async def chat_file(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
