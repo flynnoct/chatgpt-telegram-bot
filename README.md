@@ -1,10 +1,10 @@
-# chatgpt-telegram-bot
+# ChatGPT Bot for Telegram
 
-Telegram bot implemented by OpenAI ChatGPT API (gpt-3.5-turbo-0301) released on March 1, 2023.
+This repository contains a Telegram bot implemented with [OpenAI ChatGPT API](https://platform.openai.com/docs/guides/chat) released on March 1, 2023 and [python-telegram-bot](https://python-telegram-bot.org).
 
 ## Introduction
 
-This is a Telegram bot implemented by OpenAI ChatGPT API (gpt-3.5-turbo-0301). It is based on [OpenAI ChatGPT API](https://platform.openai.com/docs/guides/chat) and [python-telegram-bot](https://python-telegram-bot.org)
+This is a Telegram bot implemented with OpenAI ChatGPT API (gpt-3.5-turbo-0301). It acts as your Telegram contact.
 
 ## Usage
 
@@ -14,7 +14,7 @@ You can just send a message to the bot in private chat. The bot will reply to yo
 
 ### Group Chat
 
-You can add the bot to a group chat. However it will only reply the messages with `@<bot_name>` mentioned.
+You can add the bot to a group chat. However, it will only reply the messages with `@<bot_name>` mentioned.
 
 ### Commands
 
