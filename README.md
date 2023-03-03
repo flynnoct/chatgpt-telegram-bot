@@ -28,7 +28,7 @@ You can add the bot to a group chat. However, it will only reply the messages wi
 
 ## Installation
 
-### Prepare
+### Preparation
 
 1. Create a Telegram bot by [@BotFather](https://t.me/BotFather) and get the token.
 2. Create an OpenAI account and get the API key.
@@ -36,7 +36,7 @@ You can add the bot to a group chat. However, it will only reply the messages wi
 
 > **Note**: You should disable the privacy mode of the bot. Otherwise the bot will not receive the messages from the group chat. You can do this by sending `/setprivacy` to [@BotFather](https://t.me/BotFather).
 
-### Deploy
+### Deployment
 
 Clone this repository.
 
@@ -77,6 +77,10 @@ nohup python3 telegram_message_parser.py &
 > Note: A launch script will be added later.
 
 Now you can start a private chat to the bot or add the bot to your group chat. Enjoy.
+
+### Release version
+
+The latest released version can be found [here](https://github.com/flynnoct/chatgpt-telegram-bot/releases/latest). More interesting new features are comming soon!
 
 ## License
 
