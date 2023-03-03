@@ -46,11 +46,9 @@ class OpenAIParser:
             return str(e) + "\nSorry, I am not feeling well. Please try again."
 
     def speech_to_text(self, userid, audio_file):
-        print("speech_to_text called")
-        audio_file = open(audio_file, "rb")
+        # transcript = openai.Audio.transcribe("whisper-1", audio_file, language="zh")
         transcript = openai.Audio.transcribe("whisper-1", audio_file)
-        print(transcript)
-        
+        return transcript["text"]
     
     def update_usage(self, total_tokens, userid):
         # get time

@@ -14,17 +14,27 @@ __status__ = Dev
 
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
-import json
+import json, os
 from message_manager import MessageManager
 
 
+with open("config.json") as f:
+    config_dict = json.load(f)
+if config_dict["enable_voice"]:
+    import subprocess
+
+
 class TelegramMessageParser:
+
+    config_dict = {}
+
     def __init__(self):
         # load config
         with open("config.json") as f:
-            config_dict = json.load(f)
+            self.config_dict = json.load(f)
+        
         # init bot
-        self.bot = ApplicationBuilder().token(config_dict["telegram_bot_token"]).build()
+        self.bot = ApplicationBuilder().token(self.config_dict["telegram_bot_token"]).build()
         # add handlers
         self.add_handlers()
 
@@ -38,7 +48,8 @@ class TelegramMessageParser:
         self.bot.add_handler(CommandHandler("start", self.start))
         self.bot.add_handler(CommandHandler("clear", self.clear_context))
         self.bot.add_handler(CommandHandler("getid", self.get_user_id))
-        self.bot.add_handler(MessageHandler(filters.VOICE, self.chat_voice))
+        if self.config_dict["enable_voice"]:
+            self.bot.add_handler(MessageHandler(filters.VOICE, self.chat_voice))
         self.bot.add_handler(MessageHandler(filters.PHOTO | filters.AUDIO | filters.VIDEO, self.chat_file))
         self.bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), self.chat_text))
         self.bot.add_handler(MessageHandler(filters.COMMAND, self.unknown))
@@ -62,6 +73,7 @@ class TelegramMessageParser:
                 text="Sorry, you are not allowed to use this bot. Contact the bot owner for more information."
             )
             return
+
         # sending typing action
         await context.bot.send_chat_action(
             chat_id=update.effective_chat.id,
@@ -76,13 +88,51 @@ class TelegramMessageParser:
         # )
         await update.message.reply_text(response)
 
-    # voice message, speech to text with Whisper API and process with ChatGPT
+    # voice messag in private chat, speech to text with Whisper API and process with ChatGPT
     async def chat_voice(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        # check if it's a private chat
+        if not update.effective_chat.type == "private":
+            return
+        
+        # check if user is allowed to use this bot
+        if not self.check_user_allowed(str(update.effective_user.id)):
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="Sorry, you are not allowed to use this bot. Contact the bot owner for more information."
+            )
+            return
+
+        # sending typing action
+        await context.bot.send_chat_action(
+            chat_id=update.effective_chat.id,
+            action="typing"
+        )
+        
         file_id = update.effective_message.voice.file_id
         new_file = await context.bot.get_file(file_id)
-        f = open("voice.mp3", "wb")
-        await new_file.download_to_memory(f)
-        transcript = self.message_manager.get_transcript(str(update.effective_user.id), f)
+        await new_file.download_to_drive(file_id + ".ogg")
+
+        # audio = AudioSegment.from_ogg(file_id + ".ogg")
+        # print(audio.duration_seconds)
+        # if audio.duration_seconds > 7:
+        #     await update.message.reply_text("Sorry, the voice message is too long. Please send a voice message with length less than 7 seconds.")
+        #     return
+        # audio.export(file_id + ".mp3", format="mp3")
+
+        file_size = os.path.getsize(file_id + ".ogg") / 1000
+        # if < 200kB, convert to wav and send to openai
+        if file_size > 50:
+            await update.message.reply_text("Sorry, the voice message is too long.")
+            return
+
+        subprocess.call(['ffmpeg', '-i', file_id + '.ogg', file_id + '.wav'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        with open(file_id + ".wav", "rb") as audio_file:
+            transcript = self.message_manager.get_transcript(str(update.effective_user.id), audio_file)
+        os.remove(file_id + ".ogg")
+        os.remove(file_id + ".wav")
+
+        response = self.message_manager.get_response(str(update.effective_chat.id), str(update.effective_user.id), transcript)
+        await update.message.reply_text("\"" + transcript + "\"\n\n" + response)
 
 
     # file and photo messages

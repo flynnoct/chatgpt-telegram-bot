@@ -33,9 +33,10 @@ class MessageManager:
             
     def get_transcript(self, user, audio_file):
         try:
-            self.openai_parser.speech_to_text(user, audio_file)
+            return self.openai_parser.speech_to_text(user, audio_file)
         except Exception as e:
             print(e)
+            return ""
             
     def __sendMessage(self, user, messageList):
         ans = self.openai_parser.get_response(user, messageList)
