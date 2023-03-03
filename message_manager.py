@@ -38,12 +38,13 @@ class MessageManager:
             
     def get_generated_image_url(self, user, prompt):
         use_num = self.__check_image_generation_limit(user)
-        if use_num >= self.config_dict["image_limit"]:
+        if use_num >= self.config_dict["image_generation_limit_per_day"]:
             return (None, "You have reached the limit.")
         else:
             url = self.openai_parser.image_generation(user, prompt)
             return (url, "You have used " + str(use_num) + " / " + 
-                    str(self.config_dict["image_limit"]) + "times.")
+                    str(self.config_dict["image_generation_limit_per_day"]) + 
+                    "times.")
             
     def get_transcript(self, user, audio_file):
         try:

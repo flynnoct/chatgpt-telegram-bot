@@ -7,6 +7,6 @@
         "<USER_ID_2>"
     ],
     "wait_time": 300,
-    "image_limit": 5
+    "image_generation_limit_per_day": 5
 }
 }
