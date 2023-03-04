@@ -53,7 +53,9 @@ class OpenAIParser:
     def image_generation(self, userid, prompt):
         response = openai.Image.create(prompt = prompt, n=1, size = "512x512", user = userid)
         image_url = response["data"][0]["url"]
-        self.update_image_generation_usage(userid)
+        # self.update_image_generation_usage(userid)
+        # for debug use
+        # image_url = "https://catdoctorofmonroe.com/wp-content/uploads/2020/09/iconfinder_cat_tied_275717.png"
         return image_url
     
     def update_image_generation_usage(self, userid):

@@ -12,8 +12,8 @@ __email__ = i@flynnoct.com
 __status__ = Dev
 """
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, constants
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, ContextTypes, filters
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 import json, os
 from message_manager import MessageManager
 
@@ -21,7 +21,6 @@ with open("config.json") as f:
     config_dict = json.load(f)
 if config_dict["enable_voice"]:
     import subprocess
-
 
 class TelegramMessageParser:
 
@@ -52,7 +51,6 @@ class TelegramMessageParser:
             self.bot.add_handler(MessageHandler(filters.VOICE, self.chat_voice))
         if self.config_dict["enable_dalle"]:
             self.bot.add_handler(CommandHandler("dalle", self.image_generation))
-            # self.bot.add_handler(CallbackQueryHandler(self.get_image_file, pattern = lambda x: x.startswith("image_key:")))
         self.bot.add_handler(MessageHandler(filters.PHOTO | filters.AUDIO | filters.VIDEO, self.chat_file))
         self.bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), self.chat_text))
         self.bot.add_handler(MessageHandler(filters.COMMAND, self.unknown))
@@ -142,9 +140,6 @@ class TelegramMessageParser:
 
         # send prompt to openai image generation and get image url
         image_url, prompt = self.message_manager.get_generated_image_url(str(update.effective_user.id), message)
-        # for debug use
-        # image_url = "https://catdoctorofmonroe.com/wp-content/uploads/2020/09/iconfinder_cat_tied_275717.png"
-        # prompt = "This is a cat."
 
         # send image to user
         # await context.bot.send_photo(
@@ -153,12 +148,19 @@ class TelegramMessageParser:
         #     caption=prompt,
         # )
 
-        # send file to user
-        await context.bot.send_document(
-            chat_id = update.effective_chat.id,
-            document = image_url,
-            caption = prompt
-        )
+        # if exceeds use limit, send message instead
+        if image_url is None:
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=prompt
+            )
+        else:
+            # send file to user
+            await context.bot.send_document(
+                chat_id = update.effective_chat.id,
+                document = image_url,
+                caption = prompt
+            )
 
 
     # file and photo messages
