@@ -4,8 +4,8 @@
 
 ## News
 
-- **DALL·E, the OpenAI image generation model**, is now supported! Send a short prompt to the Bot and get your own painting!
-- **Whisper, the Microsoft Intelligent Speech Recognizer**, is now supported! Now chat with the Bot with audio messages!
+- **DALL·E, the OpenAI Image Generation Model**, is now supported! Send a short prompt to the Bot and get your own painting!
+- **Whisper, the OpenAI Intelligent Speech Recognizer**, is now supported! Now chat with the Bot with audio messages!
 
 ## Introduction
 
