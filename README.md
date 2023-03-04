@@ -1,6 +1,6 @@
 # ChatGPT Bot for Telegram
 
-![](/doc/dialog.png)
+![](/docs/dialog.png)
 
 ## News
 
