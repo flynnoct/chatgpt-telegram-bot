@@ -44,7 +44,7 @@ class MessageManager:
             url = self.openai_parser.image_generation(user, prompt)
             return (url, "You have used " + str(use_num) + " / " + 
                     str(self.config_dict["image_generation_limit_per_day"]) + 
-                    "times.")
+                    " times.")
             
     def get_transcript(self, user, audio_file):
         try:

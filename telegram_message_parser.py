@@ -12,11 +12,10 @@ __email__ = i@flynnoct.com
 __status__ = Dev
 """
 
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, constants
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, ContextTypes, filters
 import json, os
 from message_manager import MessageManager
-
 
 with open("config.json") as f:
     config_dict = json.load(f)
@@ -29,6 +28,7 @@ class TelegramMessageParser:
     config_dict = {}
 
     def __init__(self):
+
         # load config
         with open("config.json") as f:
             self.config_dict = json.load(f)
@@ -50,6 +50,9 @@ class TelegramMessageParser:
         self.bot.add_handler(CommandHandler("getid", self.get_user_id))
         if self.config_dict["enable_voice"]:
             self.bot.add_handler(MessageHandler(filters.VOICE, self.chat_voice))
+        if self.config_dict["enable_dalle"]:
+            self.bot.add_handler(CommandHandler("dalle", self.image_generation))
+            # self.bot.add_handler(CallbackQueryHandler(self.get_image_file, pattern = lambda x: x.startswith("image_key:")))
         self.bot.add_handler(MessageHandler(filters.PHOTO | filters.AUDIO | filters.VIDEO, self.chat_file))
         self.bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), self.chat_text))
         self.bot.add_handler(MessageHandler(filters.COMMAND, self.unknown))
@@ -131,6 +134,31 @@ class TelegramMessageParser:
 
         response = self.message_manager.get_response(str(update.effective_chat.id), str(update.effective_user.id), transcript)
         await update.message.reply_text("\"" + transcript + "\"\n\n" + response)
+
+    # image_generation command, aka DALLE
+    async def image_generation(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        # remove dalle command from message
+        message = update.effective_message.text.replace("/dalle", "")
+
+        # send prompt to openai image generation and get image url
+        image_url, prompt = self.message_manager.get_generated_image_url(str(update.effective_user.id), message)
+        # for debug use
+        # image_url = "https://catdoctorofmonroe.com/wp-content/uploads/2020/09/iconfinder_cat_tied_275717.png"
+        # prompt = "This is a cat."
+
+        # send image to user
+        # await context.bot.send_photo(
+        #     chat_id=update.effective_chat.id,
+        #     photo=image_url,
+        #     caption=prompt,
+        # )
+
+        # send file to user
+        await context.bot.send_document(
+            chat_id = update.effective_chat.id,
+            document = image_url,
+            caption = prompt
+        )
 
 
     # file and photo messages
