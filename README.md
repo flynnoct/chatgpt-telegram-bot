@@ -4,13 +4,14 @@
 
 ## News
 
-**OpenAI image generation model DALL·E** is now supported! Send a short prompt to the Bot and get your own painting!
+- **DALL·E, the OpenAI image generation model**, is now supported! Send a short prompt to the Bot and get your own painting!
+- **Whisper, the Microsoft Intelligent Speech Recognizer**, is now supported! Now chat with the Bot with audio messages!
 
 ## Introduction
 
 ChatGPT Bot for Telegram is implemented with [OpenAI ChatGPT API](https://platform.openai.com/docs/guides/chat) released on March 1, 2023. The Telegram integration framework is based on [python-telegram-bot](https://python-telegram-bot.org).
 
-ChatGPT Bot can act as your Telegram contact. You can chat with it either personally or in a group chat. Just like the popular AI on the OpenAI official site, the Bot shares knowledge and inspires exciting new ideas.
+ChatGPT Bot can act as your Telegram contact. You can chat with it either personally or in a group chat. Just like the popular AI on the OpenAI official site, the Bot shares knowledge and inspires exciting new ideas. Many interesting features, such as **DALL·E** and **Whisper** are integrated together to make our Bot smarter and more usable.
 
 We hope you enjoy it!
 
