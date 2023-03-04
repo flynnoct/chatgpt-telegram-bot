@@ -12,9 +12,13 @@ __email__ = i@flynnoct.com
 __status__ = Dev
 """
 
+helpmsg = """发送语音可以转文字并回复
+/dalle 描述：将描述转为图片"""
+
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 import json, os
+from openai_parser import log
 from message_manager import MessageManager
 
 with open("config.json") as f:
@@ -40,22 +44,27 @@ class TelegramMessageParser:
         # init MessageManager
         self.message_manager = MessageManager()
 
+    def run_polling(self):
         # start bot
         self.bot.run_polling()
-
         log("started")
 
     def add_handlers(self):
         self.bot.add_handler(CommandHandler("start", self.start))
+        self.bot.add_handler(CommandHandler("help", self.help))
         self.bot.add_handler(CommandHandler("clear", self.clear_context))
         self.bot.add_handler(CommandHandler("getid", self.get_user_id))
+
         if self.config_dict["enable_voice"]:
             self.bot.add_handler(MessageHandler(filters.VOICE, self.chat_voice))
+
         if self.config_dict["enable_dalle"]:
             self.bot.add_handler(CommandHandler("dalle", self.image_generation))
+
         self.bot.add_handler(MessageHandler(filters.PHOTO | filters.AUDIO | filters.VIDEO, self.chat_file))
         self.bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), self.chat_text))
         self.bot.add_handler(MessageHandler(filters.COMMAND, self.unknown))
+        self.bot.add_error_handler(self.error_handler)
 
     # chat messages
     async def chat_text(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -217,6 +226,12 @@ class TelegramMessageParser:
             text="Hello, I'm a ChatGPT bot."
         )
 
+    async def help(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        await update.message.reply_text(helpmsg)
+
+    def error_handler(self,update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        log("Exception: %s"%(context.error,),l=3)
+
     # clear context command
     async def clear_context(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         self.message_manager.clear_context(str(update.effective_chat.id))
@@ -249,7 +264,5 @@ class TelegramMessageParser:
                 return False
 
 if __name__ == "__main__":
-    TelegramMessageParser()
-    
-
+    TelegramMessageParser().run_polling()
 
