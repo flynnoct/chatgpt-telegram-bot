@@ -47,15 +47,16 @@ In a group chat, you need to tag the message with `@<bot_name>` to invoke the Bo
 2. Create an OpenAI account and get the API key.
 3. A Linux VM or a server with Python 3 is needed to run the bot.
 4. A practical Internet environment is required.
+5. (Optional) [FFmpeg](https://ffmpeg.org) is required for the Bot to handle voice messages with Whisper. If you are not interested in using voice messages, you don't need to install it and **must set `enable_voice` in the config file to False**.
 
 > **Note**: You should disable the privacy mode of the bot. Otherwise the bot will not receive the messages from the group chat. You can do this by sending `/setprivacy` to [@BotFather](https://t.me/BotFather).
 
 ### Deployment
 
-Clone this repository and install the dependencies.
+Download the latest release version and install the dependencies.
 
 ```bash
-git clone git@github.com:flynnoct/chatgpt-telegram-bot.git
+wget https://github.com/flynnoct/chatgpt-telegram-bot/releases/latest
 pip install -r requirements.txt
 ```
 
