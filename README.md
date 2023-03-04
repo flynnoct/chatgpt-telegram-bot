@@ -72,11 +72,9 @@ Follow below procedures to fill you `config.json`:
 
 > Note: the user ID is a series of numbers, you should add it to the `allowed_users` list as a string (add quotation marks around it).
 
-Now, you can run the Bot. Try talk to it, also you can invite it to your group chats and share with friends!
+Now, you can run the Bot with `start_bot.sh` and try talk to it. Also, you can invite it to group chats and share with your friends!
 
-```bash
-nohup python3 telegram_message_parser.py &
-```
+To clear ChatGPT conversation context and restart the Bot, run shell script `restart_bot.sh`. To shut down the Bot, run `stop_bot.sh`.
 
 ## Release version and notes
 

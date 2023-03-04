@@ -1,10 +1,15 @@
-{
-    "openai_api_key": "<YOUR_OPENAI_API_KEY_HERE>",
-    "telegram_bot_token": "<YOUR_TELEGRAM_BOT_TOKEN_HERE>",
-    "allowed_users": [
-        "<USER_ID_1>",
-        "<USER_ID_2>"
-    ],
-    "wait_time": 300,
-    "image_generation_limit_per_day": 5
+{ 
+    "openai_api_key": “<YOUR_OPENAI_API_KEY_HERE>”,   
+    "telegram_bot_token": “<YOUR_TELEGRAM_BOT_TOKEN_HERE>”,  
+    "enable_voice": true,   // When enabled, Bot will accept audio messages with Whisper and reply.
+    "allowed_users": [ 
+        "<USER_ID_1>", 
+        "<USER_ID_2>", 
+    ], 
+    "wait_time": 600,   // The time limit in seconds that the Bot will clear the conversation context.
+    "enable_dalle": true,   // When enabled, Bot will involve DALL·E to handle requests for painting.
+    "super_users": [ 
+        "<SUPER_USER_ID>"   // A super user are granted unlimited usage on DALL·E per day.
+    ], 
+    "image_generation_limit_per_day": 5     // The upper limit that a normal user is allowed to invoke DALL·E per day.
 }
