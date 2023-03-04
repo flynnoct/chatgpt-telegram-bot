@@ -1,8 +1,17 @@
 #!/bin/bash
+# This script restarts a Python program named telegram_message_parser.py
 
-ps -ef | grep telegram_message_parser.py | grep -v grep | awk '{print $2}' | xargs kill -15
+echo "Restarting bot..."
 
-# echo &(pidof bash)
+pid=`ps -ef | grep telegram_message_parser.py | grep -v grep | awk '{print $2}'`
 
-./start_bot.sh
+if [ -z $pid ]; then
+    echo "Bot is not running"
+else
+    echo "Bot has been terminated"
+    kill -9 $pid
+fi
 
+echo "Starting bot..."
+nohup python3 telegram_message_parser.py >/dev/null 2>&1 &
+echo "Bot has been restarted successfully"

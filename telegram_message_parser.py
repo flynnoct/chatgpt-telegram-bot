@@ -150,11 +150,21 @@ class TelegramMessageParser:
 
         # if exceeds use limit, send message instead
         if image_url is None:
+            # sending typing action
+            await context.bot.send_chat_action(
+                chat_id=update.effective_chat.id,
+                action="typing"
+            )
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=prompt
             )
         else:
+            # sending typing action
+            await context.bot.send_chat_action(
+                chat_id=update.effective_chat.id,
+                action="upload_document"
+            )
             # send file to user
             await context.bot.send_document(
                 chat_id = update.effective_chat.id,
