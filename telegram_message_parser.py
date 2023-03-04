@@ -17,18 +17,17 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, Con
 import json, os
 from message_manager import MessageManager
 
-
 with open("config.json") as f:
     config_dict = json.load(f)
 if config_dict["enable_voice"]:
     import subprocess
-
 
 class TelegramMessageParser:
 
     config_dict = {}
 
     def __init__(self):
+
         # load config
         with open("config.json") as f:
             self.config_dict = json.load(f)
@@ -50,6 +49,8 @@ class TelegramMessageParser:
         self.bot.add_handler(CommandHandler("getid", self.get_user_id))
         if self.config_dict["enable_voice"]:
             self.bot.add_handler(MessageHandler(filters.VOICE, self.chat_voice))
+        if self.config_dict["enable_dalle"]:
+            self.bot.add_handler(CommandHandler("dalle", self.image_generation))
         self.bot.add_handler(MessageHandler(filters.PHOTO | filters.AUDIO | filters.VIDEO, self.chat_file))
         self.bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), self.chat_text))
         self.bot.add_handler(MessageHandler(filters.COMMAND, self.unknown))
@@ -88,7 +89,7 @@ class TelegramMessageParser:
         # )
         await update.message.reply_text(response)
 
-    # voice messag in private chat, speech to text with Whisper API and process with ChatGPT
+    # voice message in private chat, speech to text with Whisper API and process with ChatGPT
     async def chat_voice(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         # check if it's a private chat
         if not update.effective_chat.type == "private":
@@ -108,31 +109,58 @@ class TelegramMessageParser:
             action="typing"
         )
         
-        file_id = update.effective_message.voice.file_id
-        new_file = await context.bot.get_file(file_id)
-        await new_file.download_to_drive(file_id + ".ogg")
+        try:
+            file_id = update.effective_message.voice.file_id
+            new_file = await context.bot.get_file(file_id)
+            await new_file.download_to_drive(file_id + ".ogg")
 
-        # audio = AudioSegment.from_ogg(file_id + ".ogg")
-        # print(audio.duration_seconds)
-        # if audio.duration_seconds > 7:
-        #     await update.message.reply_text("Sorry, the voice message is too long. Please send a voice message with length less than 7 seconds.")
-        #     return
-        # audio.export(file_id + ".mp3", format="mp3")
+            file_size = os.path.getsize(file_id + ".ogg") / 1000
+            # # if < 200kB, convert to wav and send to openai
+            # if file_size > 50:
+            #     await update.message.reply_text("Sorry, the voice message is too long.")
+            #     return
 
-        file_size = os.path.getsize(file_id + ".ogg") / 1000
-        # if < 200kB, convert to wav and send to openai
-        if file_size > 50:
-            await update.message.reply_text("Sorry, the voice message is too long.")
+            subprocess.call(['ffmpeg', '-i', file_id + '.ogg', file_id + '.wav'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            with open(file_id + ".wav", "rb") as audio_file:
+                transcript = self.message_manager.get_transcript(str(update.effective_user.id), audio_file)
+            os.remove(file_id + ".ogg")
+            os.remove(file_id + ".wav")
+            
+        except Exception as e:
+            await update.message.reply_text("Sorry, something went wrong. Please try again later.")
             return
-
-        subprocess.call(['ffmpeg', '-i', file_id + '.ogg', file_id + '.wav'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        with open(file_id + ".wav", "rb") as audio_file:
-            transcript = self.message_manager.get_transcript(str(update.effective_user.id), audio_file)
-        os.remove(file_id + ".ogg")
-        os.remove(file_id + ".wav")
 
         response = self.message_manager.get_response(str(update.effective_chat.id), str(update.effective_user.id), transcript)
         await update.message.reply_text("\"" + transcript + "\"\n\n" + response)
+
+    # image_generation command, aka DALLE
+    async def image_generation(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        # remove dalle command from message
+        message = update.effective_message.text.replace("/dalle", "")
+
+        # send prompt to openai image generation and get image url
+        image_url, prompt = self.message_manager.get_generated_image_url(str(update.effective_user.id), message)
+
+        # send image to user
+        # await context.bot.send_photo(
+        #     chat_id=update.effective_chat.id,
+        #     photo=image_url,
+        #     caption=prompt,
+        # )
+
+        # if exceeds use limit, send message instead
+        if image_url is None:
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=prompt
+            )
+        else:
+            # send file to user
+            await context.bot.send_document(
+                chat_id = update.effective_chat.id,
+                document = image_url,
+                caption = prompt
+            )
 
 
     # file and photo messages

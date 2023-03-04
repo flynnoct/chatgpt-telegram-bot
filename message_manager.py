@@ -12,6 +12,8 @@ class MessageManager:
     config_dict = {}
     user_image_generation_usage_dict = {}
     user_chat_usage_dict = {}
+    # Fixed by @Flynn
+    usage_dict = {}
     
     def __init__(self):
         self.openai_parser = OpenAIParser()
@@ -28,7 +30,8 @@ class MessageManager:
         else:
             self.user_image_generation_usage_dict = {}
             
-        if now not in self.usage_dict:
+        # Fixed by @Flynn
+        if now not in self.user_image_generation_usage_dict:
             self.user_image_generation_usage_dict[now] = {}
 
     
@@ -62,7 +65,7 @@ class MessageManager:
             url = self.openai_parser.image_generation(user, prompt)
             return (url, "You have used " + str(used_num) + " / " + 
                     str(self.config_dict["image_generation_limit_per_day"]) + 
-                    "times.")
+                    " times.")
             
     def get_transcript(self, user, audio_file):
         try:
