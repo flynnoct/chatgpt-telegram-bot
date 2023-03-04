@@ -17,12 +17,16 @@ We hope you enjoy it!
 
 ## Features
 
-chatgpt
-openai whisper api
-dalle (api usage limitation)
+The Telegram Bot features the following functions:
 
-但是可以加入 super user 中解除限制
-重点看 config 里面加入的新功能
+- An AI consultant, based on OpenAI ChatGPT, interacts in a conversational way.
+- A flexible speech recognizer which supports audio interaction.
+- A AI painter reponses to user's requirement prompt.
+
+Additonal functions are also implemented:
+
+- Set the daily limitation of requirements to **DALL·E**.
+- Grant more resources to _Super Users_.
 
 ## Commands
 
