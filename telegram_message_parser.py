@@ -43,6 +43,8 @@ class TelegramMessageParser:
         # start bot
         self.bot.run_polling()
 
+        log("started")
+
     def add_handlers(self):
         self.bot.add_handler(CommandHandler("start", self.start))
         self.bot.add_handler(CommandHandler("clear", self.clear_context))
@@ -110,9 +112,11 @@ class TelegramMessageParser:
         )
         
         try:
+            log("downloading voice")
             file_id = update.effective_message.voice.file_id
             new_file = await context.bot.get_file(file_id)
             await new_file.download_to_drive(file_id + ".ogg")
+            log("downloaded")
 
             file_size = os.path.getsize(file_id + ".ogg") / 1000
             # # if < 200kB, convert to wav and send to openai
@@ -121,17 +125,28 @@ class TelegramMessageParser:
             #     return
 
             subprocess.call(['ffmpeg', '-i', file_id + '.ogg', file_id + '.wav'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            log("transcripting")
             with open(file_id + ".wav", "rb") as audio_file:
                 transcript = self.message_manager.get_transcript(str(update.effective_user.id), audio_file)
+            log("transcripted")
             os.remove(file_id + ".ogg")
             os.remove(file_id + ".wav")
             
         except Exception as e:
             await update.message.reply_text("Sorry, something went wrong. Please try again later.")
+            log("something went wrong",l=3)
             return
 
+        # send transcripted text
+        await update.message.reply_text("\"" + transcript + "\"")
+
+        # send response to this msg
+        await context.bot.send_chat_action(
+            chat_id=update.effective_chat.id,
+            action="typing"
+        )
         response = self.message_manager.get_response(str(update.effective_chat.id), str(update.effective_user.id), transcript)
-        await update.message.reply_text("\"" + transcript + "\"\n\n" + response)
+        await update.message.reply_text(response)
 
     # image_generation command, aka DALLE
     async def image_generation(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
