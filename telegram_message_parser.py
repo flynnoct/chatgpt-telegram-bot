@@ -46,7 +46,7 @@ class TelegramMessageParser:
         # init AccessManager
         self.access_manager = AccessManager()
 
-        # start bot
+    def run_polling(self):
         self.bot.run_polling()
 
     def add_handlers(self):
@@ -212,7 +212,12 @@ class TelegramMessageParser:
             message = message.replace("@" + context.bot.username, "")
 
         # check if user is allowed to use this bot
-        if not self.access_manager.check_user_allowed(str(update.effective_user.id), 'file', context):
+        (allowed, message) = self.access_manager.check_user_allowed(str(update.effective_user.id))
+        if not allowed:
+            await context.bot.send_message(
+                chat_id = update.effective_chat.id,
+                text = message
+            )
             return
 
         await context.bot.send_message(
@@ -249,6 +254,6 @@ class TelegramMessageParser:
             text="Sorry, I didn't understand that command."
         )
 
-
 if __name__ == "__main__":
-    TelegramMessageParser()
+    my_bot = TelegramMessageParser()
+    my_bot.run_polling()
