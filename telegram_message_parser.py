@@ -56,12 +56,12 @@ class TelegramMessageParser:
         self.bot.add_handler(CommandHandler("getid", self.get_user_id))
 
         if self.config_dict["enable_voice"]:
-            self.bot.add_handler(MessageHandler(filters.VOICE, self.chat_voice))
+            self.bot.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.VOICE, self.chat_voice))
 
         if self.config_dict["enable_dalle"]:
             self.bot.add_handler(CommandHandler("dalle", self.image_generation))
 
-        self.bot.add_handler(MessageHandler(filters.PHOTO | filters.AUDIO | filters.VIDEO, self.chat_file))
+        self.bot.add_handler(MessageHandler(filters.ChatType.PRIVATE & (filters.PHOTO | filters.AUDIO | filters.VIDEO), self.chat_file))
         self.bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), self.chat_text))
         self.bot.add_handler(MessageHandler(filters.COMMAND, self.unknown))
         self.bot.add_error_handler(self.error_handler)
@@ -70,8 +70,9 @@ class TelegramMessageParser:
     async def chat_text(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         # get message
         message = update.effective_message.text
+        groupmsg = update.effective_chat.type == "group" or update.effective_chat.type == "supergroup"
         # group chat without @username
-        if update.effective_chat.type == "group" or update.effective_chat.type == "supergroup":
+        if groupmsg:
             if not ("@" + context.bot.username) in message:
                 return
             else:
@@ -79,7 +80,7 @@ class TelegramMessageParser:
                 message = message.replace("@" + context.bot.username, "")
 
         # check if user is allowed to use this bot
-        if not self.check_user_allowed(str(update.effective_user.id)):
+        if not groupmsg and not self.check_user_allowed(str(update.effective_user.id)):
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text="Sorry, you are not allowed to use this bot. Contact the bot owner for more information."
@@ -94,18 +95,10 @@ class TelegramMessageParser:
         # send message to openai
         response = self.message_manager.get_response(str(update.effective_chat.id), str(update.effective_user.id), message)
         # reply response to user
-        # await context.bot.send_message(
-        #     chat_id=update.effective_chat.id,
-        #     text=response
-        # )
         await update.message.reply_text(response)
 
     # voice message in private chat, speech to text with Whisper API and process with ChatGPT
     async def chat_voice(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        # check if it's a private chat
-        if not update.effective_chat.type == "private":
-            return
-        
         # check if user is allowed to use this bot
         if not self.check_user_allowed(str(update.effective_user.id)):
             await context.bot.send_message(
@@ -165,13 +158,6 @@ class TelegramMessageParser:
         # send prompt to openai image generation and get image url
         image_url, prompt = self.message_manager.get_generated_image_url(str(update.effective_user.id), message)
 
-        # send image to user
-        # await context.bot.send_photo(
-        #     chat_id=update.effective_chat.id,
-        #     photo=image_url,
-        #     caption=prompt,
-        # )
-
         # if exceeds use limit, send message instead
         if image_url is None:
             # sending typing action
@@ -187,12 +173,18 @@ class TelegramMessageParser:
             # sending typing action
             await context.bot.send_chat_action(
                 chat_id=update.effective_chat.id,
-                action="upload_document"
+                action="upload_photo"
             )
             # send file to user
-            await context.bot.send_document(
+            # await context.bot.send_document(
+            #     chat_id = update.effective_chat.id,
+            #     document = image_url,
+            #     caption = prompt
+            # )
+            # send image to user
+            await context.bot.send_photo(
                 chat_id = update.effective_chat.id,
-                document = image_url,
+                photo = image_url,
                 caption = prompt
             )
 
@@ -225,6 +217,7 @@ class TelegramMessageParser:
             chat_id=update.effective_chat.id,
             text="Hello, I'm a ChatGPT bot."
         )
+        await update.message.reply_text(helpmsg)
 
     async def help(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(helpmsg)
