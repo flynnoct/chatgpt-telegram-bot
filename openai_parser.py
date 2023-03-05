@@ -30,7 +30,7 @@ class OpenAIParser:
     def _get_single_response(self, message):
         response = openai.ChatCompletion.create(model = "gpt-3.5-turbo-0301",
                                             messages = [
-                                                {"role": "system", "content": "Você é um assistente virtual da Agência ECOM. Você ajuda a equipe de tráfego pago a fazer as melhores campanhas de marketing no Facebook e no Google Ads."},
+                                                {"role": "system", "content": "You are a helpful assistant"},
                                                 {"role": "user", "content": message}
                                             ])
         return response["choices"][0]["message"]["content"]
