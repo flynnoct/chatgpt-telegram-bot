@@ -83,10 +83,10 @@ class TelegramMessageParser:
         # send message to openai
         response = self.message_manager.get_response(str(update.effective_chat.id), str(update.effective_user.id), message)
         # reply response to user
-         await context.bot.send_message(
-             chat_id=update.effective_chat.id,
-             text=response
-         )
+        # await context.bot.send_message(
+        #     chat_id=update.effective_chat.id,
+        #     text=response
+        # )
         await update.message.reply_text(response)
 
     # voice message in private chat, speech to text with Whisper API and process with ChatGPT

@@ -28,22 +28,28 @@ class OpenAIParser:
         openai.api_key = self.config_dict["openai_api_key"]
 
     def _get_single_response(self, message):
+        with open("system_prompt.txt", "r") as f:
+            system_prompt = f.read().strip()
         response = openai.ChatCompletion.create(model = "gpt-3.5-turbo-0301",
-                                            messages = [
-                                                {"role": "system", "content": "You are a helpful assistant"},
-                                                {"role": "user", "content": message}
-                                            ])
+                                                messages = [
+                                                    {"role": "system", "content": system_prompt},
+                                                    {"role": "user", "content": message}
+                                                ])
         return response["choices"][0]["message"]["content"]
-    
+
     def get_response(self, userid, context_messages):
-        context_messages.insert(0, {"role": "system", "content": "You are a helpful assistant"})
+        with open("system_prompt.txt", "r") as f:
+            system_prompt = f.read().strip()
+        context_messages.insert(0, {"role": "system", "content": system_prompt})
         try:
             response = openai.ChatCompletion.create(model = "gpt-3.5-turbo-0301",
-                                                messages = context_messages)
+                                                    messages = context_messages)
             self.update_usage(response["usage"]["total_tokens"], userid)
             return response["choices"][0]["message"]["content"]
         except Exception as e:
             return str(e) + "\nSorry, I am not feeling well. Please try again."
+
+
 
     def speech_to_text(self, userid, audio_file):
         transcript = openai.Audio.transcribe("whisper-1", audio_file, language="pt")
