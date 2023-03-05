@@ -86,11 +86,11 @@ class TelegramMessageParser:
                 message = message.replace("@" + context.bot.username, "")
 
         # check if user is allowed to use this bot
-        (allowed, message) = self.access_manager.check_user_allowed(str(update.effective_user.id))
+        (allowed, acl_message) = self.access_manager.check_user_allowed(str(update.effective_user.id))
         if not allowed:
             await context.bot.send_message(
                 chat_id = update.effective_chat.id,
-                text = message
+                text = acl_message
             )
             return
 
@@ -119,11 +119,11 @@ class TelegramMessageParser:
             return
 
         # check if user is allowed to use this bot
-        (allowed, message) = self.access_manager.check_user_allowed(str(update.effective_user.id))
+        (allowed, acl_message) = self.access_manager.check_user_allowed(str(update.effective_user.id))
         if not allowed:
             await context.bot.send_message(
                 chat_id = update.effective_chat.id,
-                text = message
+                text = acl_message
             )
             return
 
@@ -220,13 +220,14 @@ class TelegramMessageParser:
             return
 
         # check if user is allowed to use this bot
-        if not self.check_user_allowed(str(update.effective_user.id)):
+        (allowed, acl_message) = self.access_manager.check_user_allowed(str(update.effective_user.id))
+        if not allowed:
             results = [
                 InlineQueryResultArticle(
                     id = str(uuid4()),
                     title = "Sorry😢",
-                    description = "Sorry, you are not allowed to use this bot. Contact the bot owner for more information.",
-                    input_message_content = InputTextMessageContent("Sorry, you are not allowed to use this bot. Contact the bot owner for more information.")
+                    description = acl_message,
+                    input_message_content = InputTextMessageContent(acl_message)
                 )
             ]
         else:
@@ -234,7 +235,7 @@ class TelegramMessageParser:
                 InlineQueryResultArticle(
                     id = str(uuid4()),
                     title = "Chat💬",
-                    description = "Get a response from ChatGPT",
+                    description = "Get a response from ChatGPT (It's a beta feature, no context ability yet)",
                     input_message_content = InputTextMessageContent(query),
                     reply_markup = InlineKeyboardMarkup(
                         [
@@ -264,7 +265,7 @@ class TelegramMessageParser:
             # print(query_id, query)
 
             # TODO: replace result_id
-            response = update.chosen_inline_result.query + "\n\n" + self.message_manager.get_response(result_id, user_id, query)
+            response = "\"" + update.chosen_inline_result.query + "\"\n\n" + self.message_manager.get_response(result_id, user_id, query)
             # response = 
 
             # edit message
@@ -293,11 +294,11 @@ class TelegramMessageParser:
             message = message.replace("@" + context.bot.username, "")
 
         # check if user is allowed to use this bot
-        (allowed, message) = self.access_manager.check_user_allowed(str(update.effective_user.id))
+        (allowed, acl_message) = self.access_manager.check_user_allowed(str(update.effective_user.id))
         if not allowed:
             await context.bot.send_message(
                 chat_id = update.effective_chat.id,
-                text = message
+                text = acl_message
             )
             return
 
