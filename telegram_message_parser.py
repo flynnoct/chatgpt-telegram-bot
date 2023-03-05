@@ -36,8 +36,7 @@ class TelegramMessageParser:
             self.config_dict = json.load(f)
 
         # init bot
-        self.bot = ApplicationBuilder().token(
-            self.config_dict["telegram_bot_token"]).build()
+        self.bot = ApplicationBuilder().token(self.config_dict["telegram_bot_token"]).build()
         # add handlers
         self.add_handlers()
 
@@ -55,15 +54,11 @@ class TelegramMessageParser:
         self.bot.add_handler(CommandHandler("clear", self.clear_context))
         self.bot.add_handler(CommandHandler("getid", self.get_user_id))
         if self.config_dict["enable_voice"]:
-            self.bot.add_handler(MessageHandler(
-                filters.VOICE, self.chat_voice))
+            self.bot.add_handler(MessageHandler(filters.VOICE, self.chat_voice))
         if self.config_dict["enable_dalle"]:
-            self.bot.add_handler(CommandHandler(
-                "dalle", self.image_generation))
-        self.bot.add_handler(MessageHandler(
-            filters.PHOTO | filters.AUDIO | filters.VIDEO, self.chat_file))
-        self.bot.add_handler(MessageHandler(
-            filters.TEXT & (~filters.COMMAND), self.chat_text))
+            self.bot.add_handler(CommandHandler("dalle", self.image_generation))
+        self.bot.add_handler(MessageHandler(filters.PHOTO | filters.AUDIO | filters.VIDEO, self.chat_file))
+        self.bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), self.chat_text))
         self.bot.add_handler(MessageHandler(filters.COMMAND, self.unknown))
 
     # chat messages
@@ -79,7 +74,12 @@ class TelegramMessageParser:
                 message = message.replace("@" + context.bot.username, "")
 
         # check if user is allowed to use this bot
-        if not self.access_manager.check_user_allowed(str(update.effective_user.id), 'text', context):
+        (allowed, message) = self.access_manager.check_user_allowed(str(update.effective_user.id))
+        if not allowed:
+            await context.bot.send_message(
+                chat_id = update.effective_chat.id,
+                text = message
+            )
             return
 
         # sending typing action
@@ -89,7 +89,10 @@ class TelegramMessageParser:
         )
         # send message to openai
         response = self.message_manager.get_response(
-            str(update.effective_chat.id), str(update.effective_user.id), message)
+            str(update.effective_chat.id), 
+            str(update.effective_user.id), 
+            message
+            )
         # reply response to user
         # await context.bot.send_message(
         #     chat_id=update.effective_chat.id,
@@ -104,7 +107,12 @@ class TelegramMessageParser:
             return
 
         # check if user is allowed to use this bot
-        if not self.access_manager.check_user_allowed(str(update.effective_user.id), 'voice', context):
+        (allowed, message) = self.access_manager.check_user_allowed(str(update.effective_user.id))
+        if not allowed:
+            await context.bot.send_message(
+                chat_id = update.effective_chat.id,
+                text = message
+            )
             return
 
         # sending typing action
@@ -124,11 +132,17 @@ class TelegramMessageParser:
             #     await update.message.reply_text("Sorry, the voice message is too long.")
             #     return
 
-            subprocess.call(['ffmpeg', '-i', file_id + '.ogg', file_id + '.wav'],
-                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.call(
+                ['ffmpeg', '-i', file_id + '.ogg', file_id + '.wav'],
+                stdout=subprocess.DEVNULL, 
+                stderr=subprocess.DEVNULL
+                )
+
             with open(file_id + ".wav", "rb") as audio_file:
                 transcript = self.message_manager.get_transcript(
-                    str(update.effective_user.id), audio_file)
+                    str(update.effective_user.id), 
+                    audio_file
+                    )
             os.remove(file_id + ".ogg")
             os.remove(file_id + ".wav")
 
@@ -137,7 +151,10 @@ class TelegramMessageParser:
             return
 
         response = self.message_manager.get_response(
-            str(update.effective_chat.id), str(update.effective_user.id), transcript)
+            str(update.effective_chat.id), 
+            str(update.effective_user.id), 
+            transcript
+            )
         await update.message.reply_text("\"" + transcript + "\"\n\n" + response)
 
     # image_generation command, aka DALLE
@@ -147,7 +164,9 @@ class TelegramMessageParser:
 
         # send prompt to openai image generation and get image url
         image_url, prompt = self.message_manager.get_generated_image_url(
-            str(update.effective_user.id), message)
+            str(update.effective_user.id), 
+            message
+            )
 
         # send image to user
         # await context.bot.send_photo(
