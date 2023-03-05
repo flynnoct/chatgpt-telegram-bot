@@ -5,16 +5,19 @@
 Enter description of this module
 
 __author__ = Zhiquan Wang
-__copyright__ = Copyright 2022
-__version__ = 1.0
+__copyright__ = Copyright 2023
+__version__ = 1.2.0
 __maintainer__ = Zhiquan Wang
 __email__ = i@flynnoct.com
 __status__ = Dev
 """
 
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
+import time
+
+from telegram import Update, InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, InlineQueryHandler, ChosenInlineResultHandler, ContextTypes, filters
 import json, os
+from uuid import uuid4
 from message_manager import MessageManager
 
 with open("config.json") as f:
@@ -44,15 +47,27 @@ class TelegramMessageParser:
         self.bot.run_polling()
 
     def add_handlers(self):
+        # command handlers
         self.bot.add_handler(CommandHandler("start", self.start))
         self.bot.add_handler(CommandHandler("clear", self.clear_context))
         self.bot.add_handler(CommandHandler("getid", self.get_user_id))
+
+        # special message handlers
         if self.config_dict["enable_voice"]:
             self.bot.add_handler(MessageHandler(filters.VOICE, self.chat_voice))
         if self.config_dict["enable_dalle"]:
             self.bot.add_handler(CommandHandler("dalle", self.image_generation))
         self.bot.add_handler(MessageHandler(filters.PHOTO | filters.AUDIO | filters.VIDEO, self.chat_file))
+
+        # inline query handler
+        if self.config_dict["enable_inline"]:
+            self.bot.add_handler(InlineQueryHandler(self.inline_query))
+            self.bot.add_handler(ChosenInlineResultHandler(self.inline_query_result_chosen))
+
+        # normal message handlers
         self.bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), self.chat_text))
+
+        # unknown command handler
         self.bot.add_handler(MessageHandler(filters.COMMAND, self.unknown))
 
     # chat messages
@@ -171,6 +186,75 @@ class TelegramMessageParser:
                 document = image_url,
                 caption = prompt
             )
+
+    # inline text messages
+    async def inline_query(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        # get query message
+        query = update.inline_query.query   
+
+        if query == "":
+            return
+
+        # check if user is allowed to use this bot
+        if not self.check_user_allowed(str(update.effective_user.id)):
+            results = [
+                InlineQueryResultArticle(
+                    id = str(uuid4()),
+                    title = "Sorry😢",
+                    description = "Sorry, you are not allowed to use this bot. Contact the bot owner for more information.",
+                    input_message_content = InputTextMessageContent("Sorry, you are not allowed to use this bot. Contact the bot owner for more information.")
+                )
+            ]
+        else:
+            results = [
+                InlineQueryResultArticle(
+                    id = str(uuid4()),
+                    title = "Chat💬",
+                    description = "Get a response from ChatGPT",
+                    input_message_content = InputTextMessageContent(query),
+                    reply_markup = InlineKeyboardMarkup(
+                        [
+                            [InlineKeyboardButton("🐱 I'm thinking...", switch_inline_query_current_chat = query)]
+                        ]
+                    )
+                )
+            ]
+
+        # await update.inline_query.answer(results, cache_time=0, is_personal=True, switch_pm_text="Chat Privately 🤫", switch_pm_parameter="start")
+        await update.inline_query.answer(results, cache_time=0, is_personal=True)
+    
+    async def inline_query_result_chosen(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        # invalid user won't get a response
+        try:
+            # get userid and resultid
+            user_id = update.chosen_inline_result.from_user.id
+            result_id = update.chosen_inline_result.result_id
+            inline_message_id = update.chosen_inline_result.inline_message_id
+            query = update.chosen_inline_result.query
+            # query_id = query[query.find("My_Memory_ID: ")+14:query.find("\n=======")]
+            
+            # if query_id == "": # if no query_id, generate one
+            #     query_id = str(uuid4())
+            # else: # if query_id, remove it from query
+            #     query = query[query.find("\n======="):]
+            # print(query_id, query)
+
+            # TODO: replace result_id
+            response = update.chosen_inline_result.query + "\n\n" + self.message_manager.get_response(result_id, user_id, query)
+            # response = 
+
+            # edit message
+            await context.bot.edit_message_text(
+                response,
+                inline_message_id = inline_message_id,
+                # reply_markup = InlineKeyboardMarkup(
+                #         [
+                #             [InlineKeyboardButton("Continue...", switch_inline_query_current_chat = "My_Memory_ID: \n" + query_id + "\n=======\n\n")]
+                #         ]
+                #     )
+                )
+        except:
+            pass
 
 
     # file and photo messages
