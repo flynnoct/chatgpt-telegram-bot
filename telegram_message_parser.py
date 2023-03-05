@@ -87,7 +87,7 @@ class TelegramMessageParser:
         #     chat_id=update.effective_chat.id,
         #     text=response
         # )
-        await update.message.reply_text(response)
+        await update.message.reply_text(response, parse_mode='Markdown')
 
     # voice message in private chat, speech to text with Whisper API and process with ChatGPT
     async def chat_voice(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
