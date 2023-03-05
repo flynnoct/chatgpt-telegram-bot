@@ -88,7 +88,6 @@ To clear ChatGPT conversation context and restart the Bot, run shell script `res
 bash ./bin/restart_bot.sh # restart the bot
 bash ./bin/stop_bot.sh # stop the bot
 ```
-```
 
 ## Release version and notes
 
