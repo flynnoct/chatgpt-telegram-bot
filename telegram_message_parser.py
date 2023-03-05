@@ -67,13 +67,13 @@ class TelegramMessageParser:
                 # remove @username
                 message = message.replace("@" + context.bot.username, "")
 
-        # check if user is allowed to use this bot
-        if not self.check_user_allowed(str(update.effective_user.id)):
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text="Desculpe, você não tem permissão para usar este bot. Entre em contato com o proprietário do bot para obter mais informações."
-            )
-            return
+        # # check if user is allowed to use this bot
+        # if not self.check_user_allowed(str(update.effective_user.id)):
+        #     await context.bot.send_message(
+        #         chat_id=update.effective_chat.id,
+        #         text="Desculpe, você não tem permissão para usar este bot. Entre em contato com o proprietário do bot para obter mais informações."
+        #     )
+        #     return
 
         # sending typing action
         await context.bot.send_chat_action(
@@ -83,10 +83,10 @@ class TelegramMessageParser:
         # send message to openai
         response = self.message_manager.get_response(str(update.effective_chat.id), str(update.effective_user.id), message)
         # reply response to user
-        # await context.bot.send_message(
-        #     chat_id=update.effective_chat.id,
-        #     text=response
-        # )
+         await context.bot.send_message(
+             chat_id=update.effective_chat.id,
+             text=response
+         )
         await update.message.reply_text(response)
 
     # voice message in private chat, speech to text with Whisper API and process with ChatGPT
