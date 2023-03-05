@@ -91,4 +91,4 @@ The release notes are [here](/docs/release_notes.md).
 
 If you like this project, you can buy me a coffee ❤️ or give this repository a free star ⭐️.
 
-Click [Alipay](donate_code/alipay.jpg) to open QR code.
+Click [Alipay](docs/donate_code/alipay.jpg) to open QR code.
