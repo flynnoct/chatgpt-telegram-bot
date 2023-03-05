@@ -63,20 +63,20 @@ class MessageManager:
             super_users = json.load(f)["super_users"]
         if user in super_users:
             url = self.openai_parser.image_generation(user, prompt)
-            return (url, "Hey boss, it's on your account. 💰")
+            return (url, "Ei chefe, é por sua conta. 💰")
         ############################
 
 
         used_num = self.__check_image_generation_limit(user)
         if used_num >= self.config_dict["image_generation_limit_per_day"]:
-            return (None, "You have reached the limit.")
+            return (None, "Você atingiu o limite.")
         else:
             self.__update_usage_info(user, used_num+1, "image")
             url = self.openai_parser.image_generation(user, prompt)
             # Temporary fix by @Flynn
-            return (url, "You have used " + str(used_num + 1) + " / " + 
+            return (url, "Você usou " + str(used_num + 1) + " / " + 
                     str(self.config_dict["image_generation_limit_per_day"]) + 
-                    " times.")
+                    " vezes.")
             
     def get_transcript(self, user, audio_file):
         try:
