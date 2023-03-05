@@ -46,8 +46,8 @@ class OpenAIParser:
             return str(e) + "\nSorry, I am not feeling well. Please try again."
 
     def speech_to_text(self, userid, audio_file):
-        # transcript = openai.Audio.transcribe("whisper-1", audio_file, language="zh")
-        transcript = openai.Audio.transcribe("whisper-1", audio_file)
+        transcript = openai.Audio.transcribe("whisper-1", audio_file, language="pt")
+        # transcript = openai.Audio.transcribe("whisper-1", audio_file)
         return transcript["text"]
 
     def image_generation(self, userid, prompt):

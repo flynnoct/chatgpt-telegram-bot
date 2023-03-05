@@ -71,7 +71,7 @@ class TelegramMessageParser:
         if not self.check_user_allowed(str(update.effective_user.id)):
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text="Sorry, you are not allowed to use this bot. Contact the bot owner for more information."
+                text="Desculpe, você não tem permissão para usar este bot. Entre em contato com o proprietário do bot para obter mais informações."
             )
             return
 
@@ -99,7 +99,7 @@ class TelegramMessageParser:
         if not self.check_user_allowed(str(update.effective_user.id)):
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text="Sorry, you are not allowed to use this bot. Contact the bot owner for more information."
+                text="Desculpe, você não tem permissão para usar este bot. Entre em contato com o proprietário do bot para obter mais informações."
             )
             return
 
@@ -127,7 +127,7 @@ class TelegramMessageParser:
             os.remove(file_id + ".wav")
             
         except Exception as e:
-            await update.message.reply_text("Sorry, something went wrong. Please try again later.")
+            await update.message.reply_text("Desculpe, algo deu errado. Por favor, tente novamente mais tarde.")
             return
 
         response = self.message_manager.get_response(str(update.effective_chat.id), str(update.effective_user.id), transcript)
