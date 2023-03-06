@@ -69,6 +69,7 @@ class AccessManager:
             config_dict = json.load(f)
 
         (_, now) = self.__get_usage_filename_and_key("chat")
+        self.__update_dict("chat")
 
         if config_dict["allow_all_users"] or (userid in config_dict["allowed_users"]):
             if userid not in self.user_chat_usage_dict[now]:
@@ -81,7 +82,8 @@ class AccessManager:
         with open("config.json") as f:
             config_dict = json.load(f)
 
-        (_, now) = self.__get_usage_filename_and_key("chat")
+        self.__update_dict("image")
+        (_, now) = self.__get_usage_filename_and_key("image")
 
         if userid in config_dict["allowed_users"]:
             if userid not in self.user_image_generation_usage_dict[now]:
