@@ -1,81 +1,87 @@
-# chatgpt-telegram-bot
+# ChatGPT Bot for Telegram
 
-Telegram bot implemented by OpenAI ChatGPT API (gpt-3.5-turbo-0301) released on March 1, 2023.
+![](/docs/dialog.png)
+
+## News
+
+- **DALL·E, the OpenAI Image Generation Model**, is now supported! Send a short prompt to the Bot and get your own painting!
+- **Whisper, the OpenAI Intelligent Speech Recognizer**, is now supported! Now chat with the Bot with audio messages!
 
 ## Introduction
 
-This is a Telegram bot implemented by OpenAI ChatGPT API (gpt-3.5-turbo-0301). It is based on [OpenAI ChatGPT API](https://platform.openai.com/docs/guides/chat) and [python-telegram-bot](https://python-telegram-bot.org)
+ChatGPT Bot for Telegram is implemented with [OpenAI ChatGPT API](https://platform.openai.com/docs/guides/chat) released on March 1, 2023. The Telegram integration framework is based on [python-telegram-bot](https://python-telegram-bot.org).
 
-## Usage
+ChatGPT Bot can act as your Telegram contact. You can chat with it either personally or in a group chat. Just like the popular AI on the OpenAI official site, the Bot shares knowledge and inspires exciting new ideas. Many interesting features, such as **DALL·E** and **Whisper** are integrated together to make our Bot smarter and more usable.
 
-### Private Chat
+We hope you enjoy it!
 
-You can just send a message to the bot in private chat. The bot will reply to you.
+## Features
 
-### Group Chat
+The Telegram Bot features the following functions:
 
-You can add the bot to a group chat. However it will only reply the messages with `@<bot_name>` mentioned.
+- An AI consultant, based on OpenAI ChatGPT, interacts in a conversational way.
+- A flexible speech recognizer which supports audio interaction.
+- A AI painter reponses to user's requirement prompt.
 
-### Commands
+Additonal functions are also implemented:
+
+- Set the daily limitation of requirements to **DALL·E**.
+- Grant more resources to _Super Users_.
+
+## Commands
 
 - `/start`: Start the bot.
 - `/clear`: Clear the conversation context.
 - `/getid`: Get your Telegram user ID.
+- `/dalle <prompt>`: Ask DALL·E for a painting based on your prompt.
 
-## Installation
+## Sample Usage
 
-### Prepare
+The Bot works in both personal and group chat of Telegram.
+In a personal chat, simply send a message to the Bot and it will reply to you.
+In a group chat, you need to tag the message with `@<bot_name>` to invoke the Bot.
+
+### Preparation
 
 1. Create a Telegram bot by [@BotFather](https://t.me/BotFather) and get the token.
 2. Create an OpenAI account and get the API key.
-3. A VM or a server with Python 3 is needed to run the bot.
+3. A Linux VM or a server with Python 3 is needed to run the bot.
+4. A practical Internet environment is required.
+5. (Optional) [FFmpeg](https://ffmpeg.org) is required for the Bot to handle voice messages with Whisper. If you are not interested in using voice messages, you don't need to install it and **must set `enable_voice` in the config file to False**.
 
 > **Note**: You should disable the privacy mode of the bot. Otherwise the bot will not receive the messages from the group chat. You can do this by sending `/setprivacy` to [@BotFather](https://t.me/BotFather).
 
-### Deploy
+### Deployment
 
-Clone this repository.
-
-```bash
-git clone git@github.com:flynnoct/chatgpt-telegram-bot.git
-```
-
-Install the dependencies.
+Download the latest release version and install the dependencies.
 
 ```bash
+wget https://github.com/flynnoct/chatgpt-telegram-bot/releases/latest
 pip install -r requirements.txt
 ```
 
-Create config file.
+Then, you need to create a config file to manage the Bot. The config file includes sensitive information, such as telegram_token and openai_api_key, and we only release the corresponding template `config.json.template`. Therefore, you need to create a new `config.json` file and replace the relative fields with your own.
 
 ```bash
 cp config.json.template config.json
 ```
 
-Modify config file. First,
+Follow below procedures to fill you `config.json`:
 
-```bash
-vim config.json
-```
-
-then, replace the `telegram_token` and `openai_api_key` with your own.
-
-Add allowed users to the `allowed_users` list. You can get your user id by sending `/start` to [@userinfobot](https://t.me/userinfobot) or send `/getid` to this bot (after you start it).
+1. Replace the `telegram_token` and `openai_api_key` with your own.
+2. Add allowed users to the `allowed_users` list. You can get your user id by sending `/start` to [@userinfobot](https://t.me/userinfobot) or send `/getid` to the Bot (after you start it).
 
 > Note: the user ID is a series of numbers, you should add it to the `allowed_users` list as a string (add quotation marks around it).
 
-Run the bot.
+Now, you can run the Bot with `start_bot.sh` and try talk to it. Also, you can invite it to group chats and share with your friends!
 
-```bash
-nohup python3 telegram_message_parser.py &
-```
-or
-```bash
-pm2 start telegram_message_parser.py
-```
-> Note: A launch script will be added later.
+To clear ChatGPT conversation context and restart the Bot, run shell script `restart_bot.sh`. To shut down the Bot, run `stop_bot.sh`.
 
-Now you can start a private chat to the bot or add the bot to your group chat. Enjoy.
+## Release version and notes
+
+The latest released version can be found [here](https://github.com/flynnoct/chatgpt-telegram-bot/releases/latest). More interesting new features are comming soon!
+
+The release notes are [here](/docs/release_notes.md).
 
 ## License
 

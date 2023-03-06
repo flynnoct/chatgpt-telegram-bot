@@ -44,6 +44,43 @@ class OpenAIParser:
             return response["choices"][0]["message"]["content"]
         except Exception as e:
             return str(e) + "\nSorry, I am not feeling well. Please try again."
+
+    def speech_to_text(self, userid, audio_file):
+        # transcript = openai.Audio.transcribe("whisper-1", audio_file, language="zh")
+        transcript = openai.Audio.transcribe("whisper-1", audio_file)
+        return transcript["text"]
+
+    def image_generation(self, userid, prompt):
+        response = openai.Image.create(prompt = prompt, n=1, size = "512x512", user = userid)
+        image_url = response["data"][0]["url"]
+        # self.update_image_generation_usage(userid)
+        # for debug use
+        # image_url = "https://catdoctorofmonroe.com/wp-content/uploads/2020/09/iconfinder_cat_tied_275717.png"
+        return image_url
+    
+    def update_image_generation_usage(self, userid):
+        # get time
+        usage_file_name = datetime.datetime.now().strftime("%Y%m") + "_image_generation_usage.json"
+        now = datetime.datetime.now().strftime("%Y-%m-%d")
+        # create usage folder
+        if not os.path.exists("./usage"):
+            os.makedirs("./usage")
+        # load usage or create new
+        if os.path.exists("./usage/" + usage_file_name):
+            with open("./usage/" + usage_file_name) as f:
+                self.usage_dict = json.load(f)
+        else:
+            self.usage_dict = {}
+        # update usage
+        if now not in self.usage_dict:
+            self.usage_dict[now] = {}
+        if userid not in self.usage_dict[now]:
+            self.usage_dict[now][userid] = {"requests": 0}
+        self.usage_dict[now][userid]["requests"] += 1
+        # save usage
+        with open("./usage/" + usage_file_name, "w") as f:
+            json.dump(self.usage_dict, f)
+
     
     def update_usage(self, total_tokens, userid):
         # get time
