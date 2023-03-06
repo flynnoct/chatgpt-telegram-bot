@@ -15,7 +15,7 @@ class AccessManager:
         with open("config.json") as f:
             config_dict = json.load(f)
 
-            if userid in config_dict["allowed_users"]:
+            if config_dict["allow_all_users"] or (userid in config_dict["allowed_users"]):
                 return (True, "")
             else:
                 return (False, "Sorry, you are not allowed to use this bot. Contact the bot owner for more information.")

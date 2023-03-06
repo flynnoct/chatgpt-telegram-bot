@@ -1,12 +1,14 @@
 { 
     "openai_api_key": "<YOUR_OPENAI_API_KEY_HERE>",
     "telegram_bot_token": "<YOUR_TELEGRAM_BOT_TOKEN_HERE>",
-    // When enabled, Bot will accept audio messages with Whisper and reply.
-    "enable_voice": true,   
+    // Allow all users to use the bot, if enabled, "allowed_users" list won't have any effect.
+    "allow_all_users": false,
     "allowed_users": [ 
         "<USER_ID_1>", 
-        "<USER_ID_2>", 
+        "<USER_ID_2>"
     ], 
+    // When enabled, Bot will accept audio messages with Whisper and reply.
+    "enable_voice": true,   
     // The time limit in seconds that the Bot will clear the conversation context.
     "wait_time": 600,   
     // When enabled, Bot will involve DALL·E to handle requests for painting.

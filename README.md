@@ -53,10 +53,11 @@ In a group chat, you need to tag the message with `@<bot_name>` to invoke the Bo
 
 ### Deployment
 
-Download the latest release version and install the dependencies.
+Git clone from main branch or download the latest release `Source code` file and install the dependencies.
 
 ```bash
-wget https://github.com/flynnoct/chatgpt-telegram-bot/releases/latest
+git clone https://github.com/flynnoct/chatgpt-telegram-bot.git
+cd chatgpt-telegram-bot
 pip install -r requirements.txt
 ```
 
@@ -66,7 +67,7 @@ Then, you need to create a config file to manage the Bot. The config file includ
 cp config.json.template config.json
 ```
 
-Follow below procedures to fill you `config.json`:
+Follow below procedures to modify your `config.json`:
 
 1. Replace the `telegram_token` and `openai_api_key` with your own.
 2. Add allowed users to the `allowed_users` list. You can get your user id by sending `/start` to [@userinfobot](https://t.me/userinfobot) or send `/getid` to the Bot (after you start it).
@@ -75,7 +76,18 @@ Follow below procedures to fill you `config.json`:
 
 Now, you can run the Bot with `start_bot.sh` and try talk to it. Also, you can invite it to group chats and share with your friends!
 
+```bash
+# First, make sure you are in the root directory of the project,
+# aka <your_download_location>/chatgpt-telegram-bot
+bash ./bin/start_bot.sh # start the bot
+```
+
 To clear ChatGPT conversation context and restart the Bot, run shell script `restart_bot.sh`. To shut down the Bot, run `stop_bot.sh`.
+
+```bash
+bash ./bin/restart_bot.sh # restart the bot
+bash ./bin/stop_bot.sh # stop the bot
+```
 
 ## Release version and notes
 
@@ -91,4 +103,4 @@ The release notes are [here](/docs/release_notes.md).
 
 If you like this project, you can buy me a coffee ❤️ or give this repository a free star ⭐️.
 
-Click [Alipay](donate_code/alipay.jpg) to open QR code.
+Click [Alipay](docs/donate_code/alipay.jpg) to open QR code.
