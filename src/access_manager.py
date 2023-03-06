@@ -98,8 +98,8 @@ class AccessManager:
         used_num = self.__get_image_generation_usage(userid)
 
         if num + used_num > self.config_dict["image_generation_limit_per_day"]:
-            return (False, "Sorry. You have generated " + str(used_num) + "pictures today and the limit is "
-                    + str(self.config_dict["image_generation_limit_per_day"]) + "per day.")
+            return (False, "Sorry. You have generated " + str(used_num) + " pictures today and the limit is "
+                    + str(self.config_dict["image_generation_limit_per_day"]) + " per day.")
         else:
             # self.update_usage_info(userid, used_num+1, "image")
             return (True, "You have used " + str(used_num + num) + " / " +
