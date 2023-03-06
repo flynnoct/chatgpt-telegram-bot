@@ -31,6 +31,8 @@ class AccessManager:
     def __update_dict(self, chatORimage):
         (filename, now) = self.__get_usage_filename_and_key(chatORimage)
         if not os.path.exists("./usage/" + filename):
+            with open("./usage/" + filename, 'w') as f:
+                json.dump({}, f)
             if chatORimage == "image":
                 self.user_image_generation_usage_dict = {}
             elif chatORimage == "chat":
@@ -107,3 +109,6 @@ class AccessManager:
 
 if __name__ == "__main__":
     access_manager = AccessManager()
+    access_manager.check_user_allowed("8423190")
+    access_manager.check_image_generation_allowed("8423190", 1)
+    access_manager.update_usage_info("8423190", 2, "image")
