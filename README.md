@@ -69,12 +69,15 @@ cp config.json.template config.json
 
 Follow the [documentation](docs/config_file.md) to complete your `config.json` file.
 
-3. Run the Bot with `start_bot.sh` and try talk to it. Also, you can invite it to group chats and share with your friends!
+3. Run the Bot with `start_bot.sh` and try talk to it. Also, you can invite it to group chats and share with your friends! Or you can also use docker to run the bot.
 
 ```bash
 # First, make sure you are in the root directory of the project,
 # aka <your_download_location>/chatgpt-telegram-bot
 bash ./bin/start_bot.sh # start the bot
+
+# Use docker compose to run the bot
+docker compose up -d
 ```
 
 To clear ChatGPT conversation context and restart the Bot, run shell script `restart_bot.sh`. To shut down the Bot, run `stop_bot.sh`.
