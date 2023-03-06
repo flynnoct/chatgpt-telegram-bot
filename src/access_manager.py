@@ -78,9 +78,9 @@ class AccessManager:
             config_dict = json.load(f)
 
         if userid in config_dict["allowed_users"]:
-            return True
+            return self.check_image_generation_limit(userid)
         else:
-            return False
+            return (False, "Sorry, you are not allowed to use this bot. Contact the bot owner for more information.")
 
     def check_image_generation_limit(self, userid):
         used_num = self.__get_image_generation_usage(userid)

@@ -1,7 +1,7 @@
 import json
 import copy
 
-class UserContext:
+class ChatSession:
     
     __latestTime = 0
     __messageList = []
