@@ -6,12 +6,15 @@
 
 - **DALL·E, the OpenAI Image Generation Model**, is now supported! Send a short prompt to the Bot and get your own painting!
 - **Whisper, the OpenAI Intelligent Speech Recognizer**, is now supported! Now chat with the Bot with audio messages!
+- **Important privacy protection stategy** is deployed! The Bot is unable to collect any message in group chat except user prompts.
 
 ## Introduction
 
 ChatGPT Bot for Telegram is implemented with [OpenAI ChatGPT API](https://platform.openai.com/docs/guides/chat) released on March 1, 2023. The Telegram integration framework is based on [python-telegram-bot](https://python-telegram-bot.org).
 
-ChatGPT Bot can act as your Telegram contact. You can chat with it either personally or in a group chat. Just like the popular AI on the OpenAI official site, the Bot shares knowledge and inspires exciting new ideas. Many interesting features, such as **DALL·E** and **Whisper** are integrated together to make our Bot smarter and more usable.
+ChatGPT Bot can act as your Telegram contact. You can chat with it personally, share with a contact, and collabrate in a group chat. We attach great importance to privacy protection and make sure the Bot can't acquire any unrelated messages in group chats.
+
+The Bot shares knowledge and inspires exciting new ideas. Many interesting features, such as **DALL·E** and **Whisper** are integrated together to make our Bot smarter and more usable.
 
 We hope you enjoy it!
 
@@ -25,6 +28,7 @@ The Telegram Bot features the following functions:
 
 Additonal functions are also implemented:
 
+- (Beta) _Telegram inline mode_ is supported to invoke the Bot in a private chat with a contact.
 - Set the daily limitation of requirements to **DALL·E**.
 - Grant more resources to _Super Users_.
 
@@ -32,14 +36,19 @@ Additonal functions are also implemented:
 
 - `/start`: Start the bot.
 - `/clear`: Clear the conversation context.
+- `/chat` : Invoke the Bot in group chat.
 - `/getid`: Get your Telegram user ID.
 - `/dalle <prompt>`: Ask DALL·E for a painting based on your prompt.
 
 ## Sample Usage
 
 The Bot works in both personal and group chat of Telegram.
+
 In a personal chat, simply send a message to the Bot and it will reply to you.
-In a group chat, you need to tag the message with `@<bot_name>` to invoke the Bot.
+
+In a group chat, use the `/chat` to invoke the Bot. It will not collect any other message except the prompts after the command.
+
+**(Beta)** In a personal chat with a contact, use `@your_bot_name <your messages>` to invoke the Bot with Telegram inline mode. Both you and your contact can see the Bot's reply in the chat. This function is Beta because it currently can't record the chat context.
 
 ### Preparation
 
@@ -53,7 +62,7 @@ In a group chat, you need to tag the message with `@<bot_name>` to invoke the Bo
 
 ### Deployment
 
-Git clone from main branch or download the latest release `Source code` file and install the dependencies.
+Git clone from main branch or download the latest release [Source code](https://github.com/flynnoct/chatgpt-telegram-bot/releases/latest) and install the dependencies.
 
 ```bash
 git clone https://github.com/flynnoct/chatgpt-telegram-bot.git

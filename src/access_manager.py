@@ -51,16 +51,16 @@ class AccessManager:
             used_num = self.user_image_generation_usage_dict[now][userid]
         return used_num
 
-    def update_usage_info(self, user, used_num, chatORimage):
+    def update_usage_info(self, user, num, chatORimage):
         (filename, now) = self.__get_usage_filename_and_key(chatORimage)
         if now not in self.user_image_generation_usage_dict:
             self.__update_dict(chatORimage)
         if chatORimage == "image":
-            self.user_image_generation_usage_dict[now][user] = used_num
+            self.user_image_generation_usage_dict[now][user] += num
             with open("./usage/" + filename, "w") as f:
                 json.dump(self.user_image_generation_usage_dict, f)
         elif chatORimage == "chat":
-            self.user_chat_usage_dict[now][user] = used_num
+            self.user_chat_usage_dict[now][user] += num
             with open("./usage/" + filename, "w") as f:
                 json.dump(self.user_chat_usage_dict, f)
 
@@ -68,27 +68,40 @@ class AccessManager:
         with open("config.json") as f:
             config_dict = json.load(f)
 
+        (_, now) = self.__get_usage_filename_and_key("chat")
+
         if config_dict["allow_all_users"] or (userid in config_dict["allowed_users"]):
+            if userid not in self.user_chat_usage_dict[now]:
+                self.user_chat_usage_dict[now][userid] = 0
             return (True, "")
         else:
             return (False, "Sorry, you are not allowed to use this bot. Contact the bot owner for more information.")
 
-    def check_image_generation_allowed(self, userid):
+    def check_image_generation_allowed(self, userid, num):
         with open("config.json") as f:
             config_dict = json.load(f)
 
+        (_, now) = self.__get_usage_filename_and_key("chat")
+
         if userid in config_dict["allowed_users"]:
-            return self.check_image_generation_limit(userid)
+            if userid not in self.user_image_generation_usage_dict[now]:
+                self.user_image_generation_usage_dict[now][userid] = 0
+            return self.__check_image_generation_limit(userid, num)
         else:
             return (False, "Sorry, you are not allowed to use this bot. Contact the bot owner for more information.")
 
-    def check_image_generation_limit(self, userid):
+    def __check_image_generation_limit(self, userid, num):
         used_num = self.__get_image_generation_usage(userid)
 
-        if used_num >= self.config_dict["image_generation_limit_per_day"]:
-            return (False, "You have reached the limit.")
+        if num + used_num > self.config_dict["image_generation_limit_per_day"]:
+            return (False, "Sorry. You have generated " + str(used_num) + "pictures today and the limit is "
+                    + str(self.config_dict["image_generation_limit_per_day"]) + "per day.")
         else:
-            self.update_usage_info(userid, used_num+1, "image")
-            return (True, "You have used " + str(used_num + 1) + " / " +
+            # self.update_usage_info(userid, used_num+1, "image")
+            return (True, "You have used " + str(used_num + num) + " / " +
                     str(self.config_dict["image_generation_limit_per_day"]) +
                     " times.")
+
+
+if __name__ == "__main__":
+    access_manager = AccessManager()
