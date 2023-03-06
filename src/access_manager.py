@@ -49,6 +49,7 @@ class AccessManager:
             self.__update_dict("image")
         if userid not in self.user_image_generation_usage_dict[now]:
             used_num = 0
+            self.user_image_generation_usage_dict[now][userid] = 0
         else:
             used_num = self.user_image_generation_usage_dict[now][userid]
         return used_num
