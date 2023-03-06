@@ -61,8 +61,8 @@ class AccessManager:
                 json.dump(self.user_image_generation_usage_dict, f)
         elif chatORimage == "chat":
             self.user_chat_usage_dict[now][user] = used_num
-            # with open("./usage/" + filename, "w") as f:
-            #     json.dump(self.user_chat_usage_dict, f)
+            with open("./usage/" + filename, "w") as f:
+                json.dump(self.user_chat_usage_dict, f)
 
     def check_user_allowed(self, userid):
         with open("config.json") as f:
