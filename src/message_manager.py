@@ -27,7 +27,7 @@ class MessageManager:
         
         (permission, clue) = self.access_manager.check_user_allowed(user)
         if permission == False:
-            return clue
+            return (False, clue)
           
         if id not in self.userDict:
             # new user
@@ -39,7 +39,7 @@ class MessageManager:
         (answer, usage) = self.__sendMessage(user, self.userDict[id].messageList)
         self.userDict[id].update(t, answer, "assistant")
         self.access_manager.update_usage_info(user, usage, "chat")
-        return answer
+        return (True, answer)
     
     def clear_context(self, id):
         try:
@@ -47,34 +47,34 @@ class MessageManager:
         except Exception as e:
             print(e)
             
-    def get_generated_image_url(self, user, prompt):
+    def get_generated_image_url(self, user, prompt, num=1):
 
         # Temporary fix by @Flynn, will be fixed in the next version
         with open("config.json") as f:
             super_users = json.load(f)["super_users"]
         if user in super_users:
             url = self.openai_parser.image_generation(user, prompt)
-            return (url, "Hey boss, it's on your account. 💰")
+            return (True, url, "Hey boss, it's on your account. 💰")
         ############################
 
-        (permission, clue) = self.access_manager.check_image_generation_allowed(user)
+        (permission, clue) = self.access_manager.check_image_generation_allowed(user, num)
         if permission == False:
-            return clue
+            return (False, clue)
 
         (url, usage) = self.openai_parser.image_generation(user, prompt)
         
         self.access_manager.update_usage_info(user, usage, "image")
-        return (url, clue)
+        return (True, url, clue)
             
     def get_transcript(self, user, audio_file):
         (permission, clue) = self.access_manager.check_user_allowed(user)
         if permission == False:
-            return clue
+            return (False, clue)
         
         try:
-            return self.openai_parser.speech_to_text(user, audio_file)
+            return (True, self.openai_parser.speech_to_text(user, audio_file))
         except Exception as e:
-            print(e)
+            print(False, e)
             return ""
         
            
