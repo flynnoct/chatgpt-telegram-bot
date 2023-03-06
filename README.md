@@ -53,7 +53,7 @@ In a group chat, you need to tag the message with `@<bot_name>` to invoke the Bo
 
 ### Deployment
 
-1. Git clone from main branch or download the latest release `Source code` file and install the dependencies.
+1. Git clone from main branch or download the latest release [Source code](https://github.com/flynnoct/chatgpt-telegram-bot/releases/latest) file and install the dependencies.
 
 ```bash
 git clone https://github.com/flynnoct/chatgpt-telegram-bot.git
