@@ -245,7 +245,7 @@ class TelegramMessageParser:
                     id = str(uuid4()),
                     title = "Sorry😢",
                     description = "Sorry, you are not allowed to use this bot.",
-                    input_message_content = InputTextMessageContent(acl_message)
+                    input_message_content = InputTextMessageContent("Sorry, you are not allowed to use this bot.")
                 )
             ]
         else:
@@ -296,7 +296,7 @@ class TelegramMessageParser:
                 #     )
                 )
         except Exception as e:
-            print(e)
+            pass
             
 
     # file and photo messages
