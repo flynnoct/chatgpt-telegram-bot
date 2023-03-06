@@ -16,10 +16,20 @@ class AccessManager:
 
         if not os.path.exists("./usage"):
             os.makedirs("./usage")
+        
+        # load usage info 
+        (filename, _) = self.__get_usage_filename_and_key("chat")
+        if os.path.exists("./usage/" + filename):
+            with open("./usage/" + filename) as f:
+                self.user_chat_usage_dict = json.load(f)
+            
+        (filename, _) = self.__get_usage_filename_and_key("image")
+        if os.path.exists("./usage/" + filename):
+            with open("./usage/" + filename) as f:
+                self.user_image_generation_usage_dict = json.load(f)
 
-        self.__update_dict("image")
-        self.__update_dict("chat")
 
+    # generate filename & dict key (based on datetime)
     def __get_usage_filename_and_key(self, chatORimage):
         if chatORimage == "chat":
             filename = "_chat_usage.json"
@@ -28,9 +38,12 @@ class AccessManager:
         return (datetime.datetime.now().strftime("%Y%m") + filename,
                 datetime.datetime.now().strftime("%Y-%m-%d"))
 
+    # everytime update dict, should check date here first
     def __update_dict(self, chatORimage):
         (filename, now) = self.__get_usage_filename_and_key(chatORimage)
+        # new month
         if not os.path.exists("./usage/" + filename):
+            # necessary?
             with open("./usage/" + filename, 'w') as f:
                 json.dump({}, f)
             if chatORimage == "image":
@@ -38,6 +51,8 @@ class AccessManager:
             elif chatORimage == "chat":
                 self.user_chat_usage_dict = {}
             return
+
+        # new day
         if chatORimage == "image" and now not in self.user_image_generation_usage_dict:
             self.user_image_generation_usage_dict[now] = {}
         elif chatORimage == "chat" and now not in self.user_chat_usage_dict:
@@ -45,8 +60,10 @@ class AccessManager:
 
     def __get_image_generation_usage(self, userid):
         (_, now) = self.__get_usage_filename_and_key("image")
+        # always check date
         if now not in self.user_image_generation_usage_dict:
             self.__update_dict("image")
+        
         if userid not in self.user_image_generation_usage_dict[now]:
             used_num = 0
             self.user_image_generation_usage_dict[now][userid] = 0
@@ -54,16 +71,20 @@ class AccessManager:
             used_num = self.user_image_generation_usage_dict[now][userid]
         return used_num
 
+    # update dict & do json dump
     def update_usage_info(self, user, num, chatORimage):
         (filename, now) = self.__get_usage_filename_and_key(chatORimage)
+        # always check date
         if now not in self.user_image_generation_usage_dict:
             self.__update_dict(chatORimage)
+            
         if chatORimage == "image":
             if user not in self.user_image_generation_usage_dict[now]:
                 self.user_image_generation_usage_dict[now][user] = 0
             self.user_image_generation_usage_dict[now][user] += num
             with open("./usage/" + filename, "w") as f:
                 json.dump(self.user_image_generation_usage_dict, f)
+                
         elif chatORimage == "chat":
             if user not in self.user_chat_usage_dict[now]:
                 self.user_chat_usage_dict[now][user] = 0
@@ -71,30 +92,24 @@ class AccessManager:
             with open("./usage/" + filename, "w") as f:
                 json.dump(self.user_chat_usage_dict, f)
 
+    # only check user in allowed_list or not
     def check_user_allowed(self, userid):
+        # before check, update config
         with open("config.json") as f:
             config_dict = json.load(f)
 
-        (_, now) = self.__get_usage_filename_and_key("chat")
-        self.__update_dict("chat")
-
         if config_dict["allow_all_users"] or (userid in config_dict["allowed_users"]):
-            # if userid not in self.user_chat_usage_dict[now]:
-            #     self.user_chat_usage_dict[now][userid] = 0
             return (True, "")
         else:
             return (False, "Sorry, you are not allowed to use this bot. Contact the bot owner for more information.")
 
+    # check user in allowed_list or not & check image limit
     def check_image_generation_allowed(self, userid, num):
+        # before check, update config
         with open("config.json") as f:
             config_dict = json.load(f)
 
-        self.__update_dict("image")
-        (_, now) = self.__get_usage_filename_and_key("image")
-
         if userid in config_dict["allowed_users"]:
-            # if userid not in self.user_image_generation_usage_dict[now]:
-            #     self.user_image_generation_usage_dict[now][userid] = 0
             return self.__check_image_generation_limit(userid, num)
         else:
             return (False, "Sorry, you are not allowed to use this bot. Contact the bot owner for more information.")
