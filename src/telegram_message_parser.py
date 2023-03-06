@@ -103,7 +103,7 @@ class TelegramMessageParser:
         )
 
         # send message to openai
-        _, response = self.message_manager.get_response(
+        response = self.message_manager.get_response(
             str(update.effective_chat.id), 
             str(update.effective_user.id), 
             message
@@ -132,7 +132,7 @@ class TelegramMessageParser:
             return
 
         # send message to openai
-        _, response = self.message_manager.get_response(
+        response = self.message_manager.get_response(
             str(update.effective_chat.id), 
             str(update.effective_user.id), 
             message
@@ -181,7 +181,7 @@ class TelegramMessageParser:
                 )
 
             with open(file_id + ".wav", "rb") as audio_file:
-                _, transcript = self.message_manager.get_transcript(
+                transcript = self.message_manager.get_transcript(
                     str(update.effective_user.id), 
                     audio_file
                     )
@@ -192,7 +192,7 @@ class TelegramMessageParser:
             await update.message.reply_text("Sorry, something went wrong. Please try again later.")
             return
 
-        _, response = self.message_manager.get_response(
+        response = self.message_manager.get_response(
             str(update.effective_chat.id), 
             str(update.effective_user.id), 
             transcript
@@ -205,7 +205,7 @@ class TelegramMessageParser:
         message = update.effective_message.text.replace("/dalle", "")
 
         # send prompt to openai image generation and get image url
-        _, image_url, prompt = self.message_manager.get_generated_image_url(
+        image_url, prompt = self.message_manager.get_generated_image_url(
             str(update.effective_user.id), 
             message
             )

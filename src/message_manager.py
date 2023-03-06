@@ -25,9 +25,9 @@ class MessageManager:
 
         t = time.time()
 
-        (permission, clue) = self.access_manager.check_user_allowed(user)
-        if permission == False:
-            return (False, clue)
+        # (permission, clue) = self.access_manager.check_user_allowed(user)
+        # if permission == False:
+        #     return clue
 
         if id not in self.userDict:
             # new user
@@ -40,7 +40,7 @@ class MessageManager:
             user, self.userDict[id].messageList)
         self.userDict[id].update(t, answer, "assistant")
         self.access_manager.update_usage_info(user, usage, "chat")
-        return (True, answer)
+        return answer
 
     def clear_context(self, id):
         try:
@@ -55,25 +55,25 @@ class MessageManager:
             super_users = json.load(f)["super_users"]
         if user in super_users:
             url = self.openai_parser.image_generation(user, prompt)
-            return (True, url, "Hey boss, it's on your account. 💰")
+            return url, "Hey boss, it's on your account. 💰"
         ############################
 
         (permission, clue) = self.access_manager.check_image_generation_allowed(user, num)
         if permission == False:
-            return (False, None, clue)
+            return None, clue
 
         (url, usage) = self.openai_parser.image_generation(user, prompt)
 
         self.access_manager.update_usage_info(user, usage, "image")
-        return (True, url, clue)
+        return url, clue
 
     def get_transcript(self, user, audio_file):
-        (permission, clue) = self.access_manager.check_user_allowed(user)
-        if permission == False:
-            return (False, clue)
+        # (permission, clue) = self.access_manager.check_user_allowed(user)
+        # if permission == False:
+        #     return clue
 
         try:
-            return (True, self.openai_parser.speech_to_text(user, audio_file))
+            return self.openai_parser.speech_to_text(user, audio_file)
         except Exception as e:
             print(False, e)
             return ""
