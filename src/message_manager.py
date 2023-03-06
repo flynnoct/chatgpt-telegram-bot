@@ -59,7 +59,7 @@ class MessageManager:
 
         (permission, clue) = self.access_manager.check_image_generation_allowed(user, num)
         if permission == False:
-            return (False, clue)
+            return (False, None, clue)
 
         (url, usage) = self.openai_parser.image_generation(user, prompt)
         
