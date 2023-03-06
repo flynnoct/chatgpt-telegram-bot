@@ -75,7 +75,7 @@ class MessageManager:
         try:
             return self.openai_parser.speech_to_text(user, audio_file)
         except Exception as e:
-            print(False, e)
+            print(e)
             return ""
 
     def __sendMessage(self, user, messageList):
