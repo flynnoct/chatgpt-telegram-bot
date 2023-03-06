@@ -14,6 +14,5 @@
         "<SUPER_USER_ID_2>"
     ], 
     "image_generation_limit_per_day": 5,     
-    // Beta! When enabled, Bot will be able to work in inline mode, contact @BotFather to enable inline mode for your Bot
     "enable_inline": false
 }
