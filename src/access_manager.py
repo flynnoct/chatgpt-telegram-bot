@@ -58,10 +58,14 @@ class AccessManager:
         if now not in self.user_image_generation_usage_dict:
             self.__update_dict(chatORimage)
         if chatORimage == "image":
+            if user not in self.user_image_generation_usage_dict[now]:
+                self.user_image_generation_usage_dict[now][user] = 0
             self.user_image_generation_usage_dict[now][user] += num
             with open("./usage/" + filename, "w") as f:
                 json.dump(self.user_image_generation_usage_dict, f)
         elif chatORimage == "chat":
+            if user not in self.user_chat_usage_dict[now]:
+                self.user_chat_usage_dict[now][user] = 0
             self.user_chat_usage_dict[now][user] += num
             with open("./usage/" + filename, "w") as f:
                 json.dump(self.user_chat_usage_dict, f)
@@ -74,8 +78,8 @@ class AccessManager:
         self.__update_dict("chat")
 
         if config_dict["allow_all_users"] or (userid in config_dict["allowed_users"]):
-            if userid not in self.user_chat_usage_dict[now]:
-                self.user_chat_usage_dict[now][userid] = 0
+            # if userid not in self.user_chat_usage_dict[now]:
+            #     self.user_chat_usage_dict[now][userid] = 0
             return (True, "")
         else:
             return (False, "Sorry, you are not allowed to use this bot. Contact the bot owner for more information.")
@@ -88,8 +92,8 @@ class AccessManager:
         (_, now) = self.__get_usage_filename_and_key("image")
 
         if userid in config_dict["allowed_users"]:
-            if userid not in self.user_image_generation_usage_dict[now]:
-                self.user_image_generation_usage_dict[now][userid] = 0
+            # if userid not in self.user_image_generation_usage_dict[now]:
+            #     self.user_image_generation_usage_dict[now][userid] = 0
             return self.__check_image_generation_limit(userid, num)
         else:
             return (False, "Sorry, you are not allowed to use this bot. Contact the bot owner for more information.")
