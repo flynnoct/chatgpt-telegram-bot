@@ -67,6 +67,10 @@ class MessageManager:
         return (url, clue)
             
     def get_transcript(self, user, audio_file):
+        (permission, clue) = self.access_manager.check_user_allowed(user)
+        if permission == False:
+            return clue
+        
         try:
             return self.openai_parser.speech_to_text(user, audio_file)
         except Exception as e:
