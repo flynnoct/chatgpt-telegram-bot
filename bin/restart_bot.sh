@@ -13,5 +13,5 @@ else
 fi
 
 echo "Starting bot..."
-nohup python3 telegram_message_parser.py >/dev/null 2>&1 &
+nohup python3 src/telegram_message_parser.py >/dev/null 2>&1 &
 echo "Bot has been restarted successfully"
