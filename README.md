@@ -62,7 +62,7 @@ In a group chat, use the `/chat` to invoke the Bot. It will not collect any othe
 
 ### Deployment
 
-Git clone from main branch or download the latest release [Source code](https://github.com/flynnoct/chatgpt-telegram-bot/releases/latest) and install the dependencies.
+1. Git clone from main branch or download the latest release [Source code](https://github.com/flynnoct/chatgpt-telegram-bot/releases/latest) file and install the dependencies.
 
 ```bash
 git clone https://github.com/flynnoct/chatgpt-telegram-bot.git
@@ -70,25 +70,23 @@ cd chatgpt-telegram-bot
 pip install -r requirements.txt
 ```
 
-Then, you need to create a config file to manage the Bot. The config file includes sensitive information, such as telegram_token and openai_api_key, and we only release the corresponding template `config.json.template`. Therefore, you need to create a new `config.json` file and replace the relative fields with your own.
+2. Create a config file to manage the Bot. The config file includes sensitive information, such as telegram_token and openai_api_key, and we only release the corresponding template `config.json.template`. Therefore, you need to create a new `config.json` file by replacing the relative fields in the template with your own.
 
 ```bash
 cp config.json.template config.json
 ```
 
-Follow below procedures to modify your `config.json`:
+Follow the [documentation](docs/config_file.md) to complete your `config.json` file.
 
-1. Replace the `telegram_token` and `openai_api_key` with your own.
-2. Add allowed users to the `allowed_users` list. You can get your user id by sending `/start` to [@userinfobot](https://t.me/userinfobot) or send `/getid` to the Bot (after you start it).
-
-> Note: the user ID is a series of numbers, you should add it to the `allowed_users` list as a string (add quotation marks around it).
-
-Now, you can run the Bot with `start_bot.sh` and try talk to it. Also, you can invite it to group chats and share with your friends!
+3. Run the Bot with `start_bot.sh` and try talk to it. Also, you can invite it to group chats and share with your friends! Or you can also use docker to run the bot.
 
 ```bash
 # First, make sure you are in the root directory of the project,
 # aka <your_download_location>/chatgpt-telegram-bot
 bash ./bin/start_bot.sh # start the bot
+
+# Use docker compose to run the bot
+docker compose up -d
 ```
 
 To clear ChatGPT conversation context and restart the Bot, run shell script `restart_bot.sh`. To shut down the Bot, run `stop_bot.sh`.
@@ -100,9 +98,11 @@ bash ./bin/stop_bot.sh # stop the bot
 
 ## Release version and notes
 
-The latest released version can be found [here](https://github.com/flynnoct/chatgpt-telegram-bot/releases/latest). More interesting new features are comming soon!
+The latest released version is [here](https://github.com/flynnoct/chatgpt-telegram-bot/releases/latest).
 
 The release notes are [here](/docs/release_notes.md).
+
+More interesting new features are comming soon!
 
 ## License
 
