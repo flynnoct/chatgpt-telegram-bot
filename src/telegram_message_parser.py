@@ -283,8 +283,7 @@ class TelegramMessageParser:
             # print(query_id, query)
 
             # TODO: replace result_id
-            response = "\"" + update.chosen_inline_result.query + "\"\n\n" + self.message_manager.get_response(result_id, user_id, query)
-            # response = 
+            response = "\"" + query + "\"\n\n" + self.message_manager.get_response(result_id, user_id, query)
 
             # edit message
             await context.bot.edit_message_text(
@@ -296,8 +295,9 @@ class TelegramMessageParser:
                 #         ]
                 #     )
                 )
-        except:
-            pass
+        except Exception as e:
+            print(e)
+            
 
     # file and photo messages
 

@@ -34,12 +34,12 @@ class MessageManager:
             self.userDict[id] = ChatSession(t, message)
         else:
             self.userDict[id].update(t, message, "user")
-
+        
         # send user info for statistics
         (answer, usage) = self.__sendMessage(
             user, self.userDict[id].messageList)
         self.userDict[id].update(t, answer, "assistant")
-        self.access_manager.update_usage_info(user, usage, "chat")
+        # self.access_manager.update_usage_info(user, usage, "chat")
         return answer
 
     def clear_context(self, id):
@@ -54,7 +54,7 @@ class MessageManager:
         with open("config.json") as f:
             super_users = json.load(f)["super_users"]
         if user in super_users:
-            url = self.openai_parser.image_generation(user, prompt)
+            url, _ = self.openai_parser.image_generation(user, prompt)
             return url, "Hey boss, it's on your account. 💰"
         ############################
 
