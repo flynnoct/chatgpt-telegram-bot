@@ -88,7 +88,12 @@ class AccessManager:
         if used_num >= self.config_dict["image_generation_limit_per_day"]:
             return (False, "You have reached the limit.")
         else:
-            self.update_usage_info(userid, used_num+1, "image")
+            # self.update_usage_info(userid, used_num+1, "image")
             return (True, "You have used " + str(used_num + 1) + " / " +
                     str(self.config_dict["image_generation_limit_per_day"]) +
                     " times.")
+            
+            
+if __name__ == "__main__":
+    access_manager = AccessManager()
+    
