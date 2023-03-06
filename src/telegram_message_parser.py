@@ -17,7 +17,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, Inl
 import json, os
 from uuid import uuid4
 from message_manager import MessageManager
-# from access_manager import AccessManager
+from access_manager import AccessManager
 
 with open("config.json") as f:
     config_dict = json.load(f)
@@ -40,11 +40,11 @@ class TelegramMessageParser:
         # add handlers
         self.add_handlers()
 
-        # init MessageManager
-        self.message_manager = MessageManager()
-
         # init AccessManager
         self.access_manager = AccessManager()
+
+        # init MessageManager
+        self.message_manager = MessageManager(self.access_manager)
 
     def run_polling(self):
         self.bot.run_polling()
@@ -79,6 +79,7 @@ class TelegramMessageParser:
     # normal chat messages
     async def chat_text(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
 
+
         # if group chat
         if update.effective_chat.type == "group" or update.effective_chat.type == "supergroup":
             return
@@ -86,22 +87,23 @@ class TelegramMessageParser:
         # get message
         message = update.effective_message.text
 
-        # # check if user is allowed to use this bot
-        # (allowed, acl_message) = self.access_manager.check_user_allowed(str(update.effective_user.id))
-        # if not allowed:
-        #     await context.bot.send_message(
-        #         chat_id = update.effective_chat.id,
-        #         text = acl_message
-        #     )
-        #     return
+        # check if user is allowed
+        allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
+        if not allowed:
+            await context.bot.send_message(
+                chat_id = update.effective_chat.id,
+                text = "Sorry, you are not allowed to use this bot."
+            )
+            return
 
         # sending typing action
         await context.bot.send_chat_action(
             chat_id=update.effective_chat.id,
             action="typing"
         )
+
         # send message to openai
-        response = self.message_manager.get_response(
+        _, response = self.message_manager.get_response(
             str(update.effective_chat.id), 
             str(update.effective_user.id), 
             message
@@ -114,26 +116,28 @@ class TelegramMessageParser:
         # get message
         message = update.effective_message.text
 
-        # # check if user is allowed to use this bot
-        # (allowed, acl_message) = self.access_manager.check_user_allowed(str(update.effective_user.id))
-        # if not allowed:
-        #     await context.bot.send_message(
-        #         chat_id = update.effective_chat.id,
-        #         text = acl_message
-        #     )
-        #     return
-
         # sending typing action
         await context.bot.send_chat_action(
             chat_id=update.effective_chat.id,
             action="typing"
         )
+
+        # check if user is allowed
+        allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
+        if not allowed:
+            await context.bot.send_message(
+                chat_id = update.effective_chat.id,
+                text = "Sorry, you are not allowed to use this bot."
+            )
+            return
+
         # send message to openai
-        response = self.message_manager.get_response(
+        _, response = self.message_manager.get_response(
             str(update.effective_chat.id), 
             str(update.effective_user.id), 
             message
             )
+
         # reply response to user
         await update.message.reply_text(response)
 
@@ -143,14 +147,15 @@ class TelegramMessageParser:
         if not update.effective_chat.type == "private":
             return
 
-        # # check if user is allowed to use this bot
-        # (allowed, acl_message) = self.access_manager.check_user_allowed(str(update.effective_user.id))
-        # if not allowed:
-        #     await context.bot.send_message(
-        #         chat_id = update.effective_chat.id,
-        #         text = acl_message
-        #     )
-        #     return
+        # check if user is allowed to use this bot
+        allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
+        if not allowed:
+            await context.bot.send_message(
+                chat_id = update.effective_chat.id,
+                text = "Sorry, you are not allowed to use this bot."
+            )
+            return
+
 
         # sending typing action
         await context.bot.send_chat_action(
@@ -176,7 +181,7 @@ class TelegramMessageParser:
                 )
 
             with open(file_id + ".wav", "rb") as audio_file:
-                transcript = self.message_manager.get_transcript(
+                _, transcript = self.message_manager.get_transcript(
                     str(update.effective_user.id), 
                     audio_file
                     )
@@ -187,7 +192,7 @@ class TelegramMessageParser:
             await update.message.reply_text("Sorry, something went wrong. Please try again later.")
             return
 
-        response = self.message_manager.get_response(
+        _, response = self.message_manager.get_response(
             str(update.effective_chat.id), 
             str(update.effective_user.id), 
             transcript
@@ -200,25 +205,13 @@ class TelegramMessageParser:
         message = update.effective_message.text.replace("/dalle", "")
 
         # send prompt to openai image generation and get image url
-        image_url, prompt = self.message_manager.get_generated_image_url(
+        _, image_url, prompt = self.message_manager.get_generated_image_url(
             str(update.effective_user.id), 
             message
             )
 
-        # send image to user
-        # await context.bot.send_photo(
-        #     chat_id=update.effective_chat.id,
-        #     photo=image_url,
-        #     caption=prompt,
-        # )
-
         # if exceeds use limit, send message instead
         if image_url is None:
-            # sending typing action
-            await context.bot.send_chat_action(
-                chat_id=update.effective_chat.id,
-                action="typing"
-            )
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=prompt
@@ -245,13 +238,13 @@ class TelegramMessageParser:
             return
 
         # check if user is allowed to use this bot
-        (allowed, acl_message) = self.access_manager.check_user_allowed(str(update.effective_user.id))
+        allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
         if not allowed:
             results = [
                 InlineQueryResultArticle(
                     id = str(uuid4()),
                     title = "Sorry😢",
-                    description = acl_message,
+                    description = "Sorry, you are not allowed to use this bot.",
                     input_message_content = InputTextMessageContent(acl_message)
                 )
             ]
@@ -319,11 +312,11 @@ class TelegramMessageParser:
             message = message.replace("@" + context.bot.username, "")
 
         # check if user is allowed to use this bot
-        (allowed, acl_message) = self.access_manager.check_user_allowed(str(update.effective_user.id))
+        allowed, acl_message = self.access_manager.check_user_allowed(str(update.effective_user.id))
         if not allowed:
             await context.bot.send_message(
                 chat_id = update.effective_chat.id,
-                text = acl_message
+                text = "Sorry, you are not allowed to use this bot."
             )
             return
 
@@ -341,6 +334,13 @@ class TelegramMessageParser:
 
     # clear context command
     async def clear_context(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
+        if not allowed:
+            await context.bot.send_message(
+                chat_id = update.effective_chat.id,
+                text = "Sorry, you are not allowed to use this bot."
+            )
+            return
         self.message_manager.clear_context(str(update.effective_chat.id))
         await context.bot.send_message(
             chat_id=update.effective_chat.id,

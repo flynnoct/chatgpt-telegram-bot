@@ -13,9 +13,9 @@ class MessageManager:
     openai_parser = None
     access_manager = None
     
-    def __init__(self):
+    def __init__(self, access_manager):
         self.openai_parser = OpenAIParser()
-        self.access_manager = AccessManager()
+        self.access_manager = access_manager
         # load config
         with open("config.json") as f:
             self.config_dict = json.load(f)
