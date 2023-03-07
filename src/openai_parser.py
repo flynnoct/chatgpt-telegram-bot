@@ -6,7 +6,7 @@ Description to be added.
 
 __author__ = Zhiquan Wang
 __copyright__ = Copyright 2023
-__version__ = 1.0
+__version__ = 1.2.2
 __maintainer__ = Zhiquan Wang
 __email__ = contact@flynmail.com
 __status__ = Dev

@@ -39,7 +39,7 @@ class MessageManager:
         (answer, usage) = self.__sendMessage(
             user, self.userDict[id].messageList)
         self.userDict[id].update(t, answer, "assistant")
-        # self.access_manager.update_usage_info(user, usage, "chat")
+        self.access_manager.update_usage_info(user, usage, "chat")
         return answer
 
     def clear_context(self, id):
@@ -81,3 +81,8 @@ class MessageManager:
     def __sendMessage(self, user, messageList):
         ans = self.openai_parser.get_response(user, messageList)
         return ans
+    
+    
+if __name__ == "__main__":
+    acm = AccessManager()
+    msm = MessageManager(acm)
