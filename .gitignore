@@ -1,6 +1,7 @@
 config.json
 usage
 nohup.out
+bin/config.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
