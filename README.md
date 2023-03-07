@@ -2,13 +2,17 @@
 
 ![](/docs/dialog.png)
 
+## URGENT
+
+We located a bug in v1.2.0 which may lead to an error when start the bot. Please make sure you update to the v1.2.1 version.
+
 ## News
 
 - **DALL·E, the OpenAI Image Generation Model**, is now supported! Send a short prompt to the Bot and get your own painting!
 - **Whisper, the OpenAI Intelligent Speech Recognizer**, is now supported! Now chat with the Bot with audio messages!
-- **Telegram Inline Mode (Beta)** is now supported! You can ask @BotFather to enable **both** inline mode & *inline feedback to 100%** for your Bot and use it in any private chat with a contact and group chat (even without inviting the bot as a member).
+- **Telegram Inline Mode (Beta)** is now supported! You can ask @BotFather to enable **both** inline mode & \*inline feedback to 100%\*\* for your Bot and use it in any private chat with a contact and group chat (even without inviting the bot as a member).
 - **Important privacy protection strategy** is deployed! The Bot is unable (and of course we won't) to collect any message in group chat except user prompts.
-- **Better config.json.template** is now provided. 
+- **Better config.json.template** is now provided.
 
 ## Introduction
 
