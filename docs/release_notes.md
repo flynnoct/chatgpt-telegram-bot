@@ -2,7 +2,7 @@
 
 ## v1.2.1
 
-- A function bug is fixed.
+- A critical bug is fixed.
 
 ## v1.2.0
 
