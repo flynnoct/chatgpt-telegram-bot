@@ -1,5 +1,15 @@
 # Version history
 
+## v1.2.2
+
+- Some bugs in ACM are fixed.
+- Support `gpt-3.5-turbo`.
+- The Bot replys in Markdown style.
+
+## v1.2.1
+
+- A critical bug is fixed.
+
 ## v1.2.0
 
 - Privacy protection improvement. The Bot now is unable to acquire messages in the group chat except user prompts.
