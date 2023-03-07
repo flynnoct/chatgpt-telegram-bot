@@ -6,7 +6,9 @@
 
 - **DALL·E, the OpenAI Image Generation Model**, is now supported! Send a short prompt to the Bot and get your own painting!
 - **Whisper, the OpenAI Intelligent Speech Recognizer**, is now supported! Now chat with the Bot with audio messages!
-- **Important privacy protection stategy** is deployed! The Bot is unable to collect any message in group chat except user prompts.
+- **Telegram Inline Mode (Beta)** is now supported! You can ask @BotFather to enable **both** inline mode & *inline feedback to 100%** for your Bot and use it in any private chat with a contact and group chat (even without inviting the bot as a member).
+- **Important privacy protection strategy** is deployed! The Bot is unable (and of course we won't) to collect any message in group chat except user prompts.
+- **Better config.json.template** is now provided. 
 
 ## Introduction
 
@@ -28,17 +30,19 @@ The Telegram Bot features the following functions:
 
 Additonal functions are also implemented:
 
-- (Beta) _Telegram inline mode_ is supported to invoke the Bot in a private chat with a contact.
+- (Beta) Telegram _inline mode_ is supported to invoke the Bot in a private chat with a contact and a group without bot as a member.
+- Set `allow_all_users` to `true` to allow all users to use the Bot.
 - Set the daily limitation of requirements to **DALL·E**.
 - Grant more resources to _Super Users_.
+- Docker deployment is supported. (This method is maintained by community. Thanks for @EstrellaXD 's contribution)
 
 ## Commands
 
 - `/start`: Start the bot.
-- `/clear`: Clear the conversation context.
 - `/chat` : Invoke the Bot in group chat.
-- `/getid`: Get your Telegram user ID.
 - `/dalle <prompt>`: Ask DALL·E for a painting based on your prompt.
+- `/clear`: Clear the conversation context.
+- `/getid`: Get your Telegram user ID.
 
 ## Sample Usage
 
