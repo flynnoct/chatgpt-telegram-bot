@@ -16,20 +16,20 @@ class AccessManager:
 
         if not os.path.exists("./usage"):
             os.makedirs("./usage")
-        
-        # load usage info 
+
+        # load usage info
         (filename, _) = self.__get_usage_filename_and_key("chat")
         if os.path.exists("./usage/" + filename):
             with open("./usage/" + filename) as f:
                 self.user_chat_usage_dict = json.load(f)
-            
+
         (filename, _) = self.__get_usage_filename_and_key("image")
         if os.path.exists("./usage/" + filename):
             with open("./usage/" + filename) as f:
                 self.user_image_generation_usage_dict = json.load(f)
 
-
     # generate filename & dict key (based on datetime)
+
     def __get_usage_filename_and_key(self, chatORimage):
         if chatORimage == "chat":
             filename = "_chat_usage.json"
@@ -43,14 +43,10 @@ class AccessManager:
         (filename, now) = self.__get_usage_filename_and_key(chatORimage)
         # new month
         if not os.path.exists("./usage/" + filename):
-            # necessary?
-            with open("./usage/" + filename, 'w') as f:
-                json.dump({}, f)
             if chatORimage == "image":
                 self.user_image_generation_usage_dict = {}
             elif chatORimage == "chat":
                 self.user_chat_usage_dict = {}
-            return
 
         # new day
         if chatORimage == "image" and now not in self.user_image_generation_usage_dict:
@@ -63,7 +59,7 @@ class AccessManager:
         # always check date
         if now not in self.user_image_generation_usage_dict:
             self.__update_dict("image")
-        
+
         if userid not in self.user_image_generation_usage_dict[now]:
             used_num = 0
             self.user_image_generation_usage_dict[now][userid] = 0
@@ -74,17 +70,17 @@ class AccessManager:
     # update dict & do json dump
     def update_usage_info(self, user, num, chatORimage):
         (filename, now) = self.__get_usage_filename_and_key(chatORimage)
-        # always check date
-        if now not in self.user_image_generation_usage_dict:
-            self.__update_dict(chatORimage)
-            
+        self.__update_dict(chatORimage)
+
         if chatORimage == "image":
+            # if now not in self.user_image_generation_usage_dict:
+            #     self.__update_dict("image")
             if user not in self.user_image_generation_usage_dict[now]:
                 self.user_image_generation_usage_dict[now][user] = 0
             self.user_image_generation_usage_dict[now][user] += num
             with open("./usage/" + filename, "w") as f:
                 json.dump(self.user_image_generation_usage_dict, f)
-                
+
         elif chatORimage == "chat":
             if user not in self.user_chat_usage_dict[now]:
                 self.user_chat_usage_dict[now][user] = 0
@@ -132,3 +128,4 @@ if __name__ == "__main__":
     access_manager.check_user_allowed("8423190")
     access_manager.check_image_generation_allowed("8423190", 1)
     access_manager.update_usage_info("8423190", 2, "image")
+    access_manager.update_usage_info("8423190", 2, "chat")
