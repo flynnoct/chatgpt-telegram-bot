@@ -2,9 +2,9 @@
 
 ## v1.2.2
 
-- Some bugs in ACM are fixed.
-- Support `gpt-3.5-turbo`.
-- The Bot replys in Markdown style.
+- Some bugs in ACM and MSM are fixed.
+- Update model to `gpt-3.5-turbo`.
+- Telegram will now parse GPT's response in Markdown mode.
 
 ## v1.2.1
 
