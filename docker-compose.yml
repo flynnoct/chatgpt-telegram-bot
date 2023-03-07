@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+  chatgpt-bot:
+    image: chatgpt/bot
+    container_name: chatgpt-bot
+    restart: always
+    build:
+        context: .
+        dockerfile: Dockerfile
