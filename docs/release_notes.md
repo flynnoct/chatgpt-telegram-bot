@@ -4,7 +4,7 @@
 
 - Some bugs in ACM and MSM are fixed.
 - Update model to `gpt-3.5-turbo`.
-- Telegram will now parse GPT's response in Markdown mode.
+- Removed support for Markdown response because the escape chars are hard to handle. Maybe it will be back in the future.
 
 ## v1.2.1
 
