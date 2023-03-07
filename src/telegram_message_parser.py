@@ -109,6 +109,7 @@ class TelegramMessageParser:
             message
             )
         # reply response to user
+        # await update.message.reply_text(self.escape_str(response), parse_mode='MarkdownV2')
         await update.message.reply_text(response)
 
     # command chat messages
@@ -139,7 +140,7 @@ class TelegramMessageParser:
             )
 
         # reply response to user
-        await update.message.reply_text(response, parse_mode='Markdown')
+        await update.message.reply_text(response)
 
     # voice message in private chat, speech to text with Whisper API and process with ChatGPT
     async def chat_voice(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
