@@ -6,7 +6,7 @@ Description to be added.
 
 __author__ = Zhiquan Wang
 __copyright__ = Copyright 2023
-__version__ = 1.0
+__version__ = 1.2.2
 __maintainer__ = Zhiquan Wang
 __email__ = contact@flynmail.com
 __status__ = Dev
@@ -28,7 +28,7 @@ class OpenAIParser:
         openai.api_key = self.config_dict["openai_api_key"]
 
     def _get_single_response(self, message):
-        response = openai.ChatCompletion.create(model = "gpt-3.5-turbo-0301",
+        response = openai.ChatCompletion.create(model = "gpt-3.5-turbo",
                                             messages = [
                                                 {"role": "system", "content": "You are a helpful assistant"},
                                                 {"role": "user", "content": message}
@@ -38,7 +38,7 @@ class OpenAIParser:
     def get_response(self, userid, context_messages):
         context_messages.insert(0, {"role": "system", "content": "You are a helpful assistant"})
         try:
-            response = openai.ChatCompletion.create(model = "gpt-3.5-turbo-0301",
+            response = openai.ChatCompletion.create(model = "gpt-3.5-turbo",
                                                 messages = context_messages)
             return (response["choices"][0]["message"]["content"], response["usage"]["total_tokens"])
         except Exception as e:

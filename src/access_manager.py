@@ -70,9 +70,7 @@ class AccessManager:
     # update dict & do json dump
     def update_usage_info(self, user, num, chatORimage):
         (filename, now) = self.__get_usage_filename_and_key(chatORimage)
-        # always check date
-        if now not in self.user_image_generation_usage_dict:
-            self.__update_dict(chatORimage)
+        self.__update_dict(chatORimage)
 
         if chatORimage == "image":
             if user not in self.user_image_generation_usage_dict[now]:
@@ -97,6 +95,7 @@ class AccessManager:
         if config_dict["allow_all_users"] or (userid in config_dict["allowed_users"]):
             return (True, "")
         else:
+            # print("sorry at unallowed chat.")
             return (False, "Sorry, you are not allowed to use this bot. Contact the bot owner for more information.")
 
     # check user in allowed_list or not & check image limit
@@ -108,16 +107,17 @@ class AccessManager:
         if userid in config_dict["allowed_users"]:
             return self.__check_image_generation_limit(userid, num)
         else:
+            # print("sorry at unallowed image generation.")
             return (False, "Sorry, you are not allowed to use this bot. Contact the bot owner for more information.")
 
     def __check_image_generation_limit(self, userid, num):
         used_num = self.__get_image_generation_usage(userid)
 
         if num + used_num > self.config_dict["image_generation_limit_per_day"]:
+            # print("sorry at over limit generation.")
             return (False, "Sorry. You have generated " + str(used_num) + " pictures today and the limit is "
                     + str(self.config_dict["image_generation_limit_per_day"]) + " per day.")
         else:
-            # self.update_usage_info(userid, used_num+1, "image")
             return (True, "You have used " + str(used_num + num) + " / " +
                     str(self.config_dict["image_generation_limit_per_day"]) +
                     " times.")
@@ -125,6 +125,9 @@ class AccessManager:
 
 if __name__ == "__main__":
     access_manager = AccessManager()
-    access_manager.check_user_allowed("8423190")
+    access_manager.check_user_allowed("1234567")
+    access_manager.check_image_generation_allowed("1234567", 1)
+    # access_manager.update_usage_info("8423190", 2, "image")
     access_manager.check_image_generation_allowed("8423190", 1)
-    access_manager.update_usage_info("8423190", 2, "image")
+    access_manager.check_image_generation_allowed("8423190", 5)
+    access_manager.update_usage_info("8423190", 2, "chat")

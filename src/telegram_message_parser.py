@@ -109,6 +109,7 @@ class TelegramMessageParser:
             message
             )
         # reply response to user
+        # await update.message.reply_text(self.escape_str(response), parse_mode='MarkdownV2')
         await update.message.reply_text(response)
 
     # command chat messages
@@ -283,7 +284,7 @@ class TelegramMessageParser:
             # print(query_id, query)
 
             # TODO: replace result_id
-            response = "\"" + query + "\"\n\n" + self.message_manager.get_response(result_id, user_id, query)
+            response = "\"" + query + "\"\n\n" + self.message_manager.get_response(str(result_id), str(user_id), query)
 
             # edit message
             await context.bot.edit_message_text(

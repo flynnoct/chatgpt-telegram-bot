@@ -2,19 +2,19 @@
 
 ![](/docs/dialog.png)
 
-## URGENT
+## 🔥 URGENT
 
-We located a bug in v1.2.0 which may lead to an error when start the bot. Please make sure you update to the v1.2.1 version.
+We located a bug in v1.2.0 which may lead to an error when start the bot. Please make sure you update to the v1.2.2 version.
 
-## News
+## 🎉 News
 
 - **DALL·E, the OpenAI Image Generation Model**, is now supported! Send a short prompt to the Bot and get your own painting!
 - **Whisper, the OpenAI Intelligent Speech Recognizer**, is now supported! Now chat with the Bot with audio messages!
-- **Telegram Inline Mode (Beta)** is now supported! You can ask @BotFather to enable **both** inline mode & \*inline feedback to 100%\*\* for your Bot and use it in any private chat with a contact and group chat (even without inviting the bot as a member).
+- **Telegram Inline Mode (Beta)** is now supported! You can ask @BotFather to enable **both inline mode & inline feedback to 100%** for your Bot and use it in any private chat with a contact and group chat (even without inviting the bot as a member).
 - **Important privacy protection strategy** is deployed! The Bot is unable (and of course we won't) to collect any message in group chat except user prompts.
 - **Better config.json.template** is now provided.
 
-## Introduction
+## 🐱 Introduction
 
 ChatGPT Bot for Telegram is implemented with [OpenAI ChatGPT API](https://platform.openai.com/docs/guides/chat) released on March 1, 2023. The Telegram integration framework is based on [python-telegram-bot](https://python-telegram-bot.org).
 
@@ -24,7 +24,7 @@ The Bot shares knowledge and inspires exciting new ideas. Many interesting featu
 
 We hope you enjoy it!
 
-## Features
+## 🌟 Features
 
 The Telegram Bot features the following functions:
 
@@ -35,20 +35,12 @@ The Telegram Bot features the following functions:
 Additonal functions are also implemented:
 
 - (Beta) Telegram _inline mode_ is supported to invoke the Bot in a private chat with a contact and a group without bot as a member.
-- Set `allow_all_users` to `true` to allow all users to use the Bot.
+- User Whitelist to control who can use the bot. You can also set `allow_all_users` to `true` to allow all users to use the Bot.
 - Set the daily limitation of requirements to **DALL·E**.
 - Grant more resources to _Super Users_.
 - Docker deployment is supported. (This method is maintained by community. Thanks for @EstrellaXD 's contribution)
 
-## Commands
-
-- `/start`: Start the bot.
-- `/chat` : Invoke the Bot in group chat.
-- `/dalle <prompt>`: Ask DALL·E for a painting based on your prompt.
-- `/clear`: Clear the conversation context.
-- `/getid`: Get your Telegram user ID.
-
-## Sample Usage
+## 👋 How to Use
 
 The Bot works in both personal and group chat of Telegram.
 
@@ -57,6 +49,16 @@ In a personal chat, simply send a message to the Bot and it will reply to you.
 In a group chat, use the `/chat` to invoke the Bot. It will not collect any other message except the prompts after the command.
 
 **(Beta)** In a personal chat with a contact, use `@your_bot_name <your messages>` to invoke the Bot with Telegram inline mode. Both you and your contact can see the Bot's reply in the chat. This function is Beta because it currently can't record the chat context.
+
+### Bot Commands
+
+- `/start`: Start the bot.
+- `/chat` : Invoke the Bot in group chat.
+- `/dalle <prompt>`: Ask DALL·E for a painting based on your prompt.
+- `/clear`: Clear the conversation context.
+- `/getid`: Get your Telegram user ID.
+
+## 👷 Deploy Your Own
 
 ### Preparation
 
@@ -68,7 +70,7 @@ In a group chat, use the `/chat` to invoke the Bot. It will not collect any othe
 
 > **Note**: You should disable the privacy mode of the bot. Otherwise the bot will not receive the messages from the group chat. You can do this by sending `/setprivacy` to [@BotFather](https://t.me/BotFather).
 
-### Deployment
+### Installation
 
 1. Git clone from main branch or download the latest release [Source code](https://github.com/flynnoct/chatgpt-telegram-bot/releases/latest) file and install the dependencies.
 
@@ -104,7 +106,7 @@ bash ./bin/restart_bot.sh # restart the bot
 bash ./bin/stop_bot.sh # stop the bot
 ```
 
-## Release version and notes
+## 📚 Release Notes
 
 The latest released version is [here](https://github.com/flynnoct/chatgpt-telegram-bot/releases/latest).
 
@@ -112,11 +114,11 @@ The release notes are [here](/docs/release_notes.md).
 
 More interesting new features are comming soon!
 
-## License
+## 🪪 License
 
 [MIT](LICENSE.md)
 
-## Buy Me a Coffee
+## ☕️ Buy Me a Coffee (not Java)
 
 If you like this project, you can buy me a coffee ❤️ or give this repository a free star ⭐️.
 
