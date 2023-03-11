@@ -125,6 +125,7 @@ def update_user_list(index, type="Update one item"):
             print("The allowed list is cleared.\n")
             break
         elif data == 'd':
+            print("")
             break
         else:
             print("*** Invalid input!")
@@ -141,8 +142,23 @@ def update_item(index, type="Update one item"):
         while True:
             data = sys.stdin.readline().strip('\n')
             if not (data == 'true' or data == 'false'):
-                print("*** Invalid input! please input 'true' or 'false':")
+                print("*** Invalid input! Please input 'true' or 'false':")
             else:
+                break
+    elif index == "6" or index == "9":
+        print("Input your <", item_dict[index], ">:")
+        while True:
+            data = sys.stdin.readline().strip('\n')
+
+            for i in range(len(data)):
+                if ord(data[i]) > 57 or ord(data[i]) < 48:
+                    print("*** Invalid input! Please input a number:")
+                    flag = 0
+                    break
+                else:
+                    flag = 1
+
+            if flag == 1:
                 break
     else:
         print("Input your <", item_dict[index], ">:")
