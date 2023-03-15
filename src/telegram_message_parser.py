@@ -15,6 +15,7 @@ __status__ = Dev
 from telegram import Update, InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, InlineQueryHandler, ChosenInlineResultHandler, ContextTypes, filters
 import json, os
+import logging
 from uuid import uuid4
 from message_manager import MessageManager
 from access_manager import AccessManager
@@ -35,6 +36,23 @@ class TelegramMessageParser:
         with open("config.json") as f:
             self.config_dict = json.load(f)
 
+        # init logging
+        self.logger = logging.getLogger("TelegramMessageParser")
+
+        # config logging, only done once in this class, TODO: integrate with config_manager classes
+        self.logger.setLevel(logging.DEBUG)
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
+        file_handler = logging.FileHandler("./bot.log")
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(formatter)
+        self.logger.addHandler(file_handler)
+
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.DEBUG)
+        console_handler.setFormatter(formatter)
+        self.logger.addHandler(console_handler)
+
         # init bot
         self.bot = ApplicationBuilder().token(self.config_dict["telegram_bot_token"]).build()
         # add handlers
@@ -47,6 +65,7 @@ class TelegramMessageParser:
         self.message_manager = MessageManager(self.access_manager)
 
     def run_polling(self):
+        self.logger.info("Starting polling, the bot is now running...")
         self.bot.run_polling()
 
     def add_handlers(self):
@@ -78,8 +97,7 @@ class TelegramMessageParser:
 
     # normal chat messages
     async def chat_text(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-
-
+        self.logger.info("Get a chat message from user: %s" % str(update.effective_user.id))
         # if group chat
         if update.effective_chat.type == "group" or update.effective_chat.type == "supergroup":
             return
@@ -90,6 +108,7 @@ class TelegramMessageParser:
         # check if user is allowed
         allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
         if not allowed:
+            self.logger.debug("User %s is not allowed to use this bot." % str(update.effective_user.id))
             await context.bot.send_message(
                 chat_id = update.effective_chat.id,
                 text = "Sorry, you are not allowed to use this bot."
@@ -110,10 +129,12 @@ class TelegramMessageParser:
             )
         # reply response to user
         # await update.message.reply_text(self.escape_str(response), parse_mode='MarkdownV2')
+        self.logger.debug("Sending response to user: %s" % str(update.effective_user.id))
         await update.message.reply_text(response)
 
     # command chat messages
     async def chat_text_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.logger.info("Get a chat message (triggered by command) from user: %s" % str(update.effective_user.id))
         # get message
         message = update.effective_message.text
 
@@ -126,6 +147,7 @@ class TelegramMessageParser:
         # check if user is allowed
         allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
         if not allowed:
+            self.logger.debug("User %s is not allowed to use this bot." % str(update.effective_user.id))
             await context.bot.send_message(
                 chat_id = update.effective_chat.id,
                 text = "Sorry, you are not allowed to use this bot."
@@ -140,10 +162,12 @@ class TelegramMessageParser:
             )
 
         # reply response to user
+        self.logger.debug("Sending response to user: %s" % str(update.effective_user.id))
         await update.message.reply_text(response)
 
     # voice message in private chat, speech to text with Whisper API and process with ChatGPT
     async def chat_voice(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.logger.info("Get a voice message from user: %s" % str(update.effective_user.id))
         # check if it's a private chat
         if not update.effective_chat.type == "private":
             return
@@ -151,6 +175,7 @@ class TelegramMessageParser:
         # check if user is allowed to use this bot
         allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
         if not allowed:
+            self.logger.debug("User %s is not allowed to use this bot." % str(update.effective_user.id))
             await context.bot.send_message(
                 chat_id = update.effective_chat.id,
                 text = "Sorry, you are not allowed to use this bot."
@@ -165,6 +190,7 @@ class TelegramMessageParser:
         )
 
         try:
+            self.logger.debug("Downloading voice message from user: %s" % str(update.effective_user.id))
             file_id = update.effective_message.voice.file_id
             new_file = await context.bot.get_file(file_id)
             await new_file.download_to_drive(file_id + ".ogg")
@@ -175,6 +201,7 @@ class TelegramMessageParser:
             #     await update.message.reply_text("Sorry, the voice message is too long.")
             #     return
 
+            self.logger.debug("Converting voice message from user: %s" % str(update.effective_user.id))
             subprocess.call(
                 ['ffmpeg', '-i', file_id + '.ogg', file_id + '.wav'],
                 stdout=subprocess.DEVNULL, 
@@ -190,18 +217,23 @@ class TelegramMessageParser:
             os.remove(file_id + ".wav")
 
         except Exception as e:
+            self.logger.error("Error when processing voice message from user: %s" % str(update.effective_user.id))
             await update.message.reply_text("Sorry, something went wrong. Please try again later.")
             return
 
+        # send message to openai
+        self.logger.debug("Sending message to OpenAI Whisper from user: %s" % str(update.effective_user.id))
         response = self.message_manager.get_response(
             str(update.effective_chat.id), 
             str(update.effective_user.id), 
             transcript
             )
+        self.logger.debug("Sending response to user: %s" % str(update.effective_user.id))
         await update.message.reply_text("\"" + transcript + "\"\n\n" + response)
 
     # image_generation command, aka DALLE
     async def image_generation(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.logger.info("Get a image generation command from user: %s" % str(update.effective_user.id))
         # remove dalle command from message
         message = update.effective_message.text.replace("/dalle", "")
 
@@ -213,6 +245,7 @@ class TelegramMessageParser:
 
         # if exceeds use limit, send message instead
         if image_url is None:
+            self.logger.debug("The image generation request from user %s cannot be processed due to %s." % (str(update.effective_user.id), prompt))
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=prompt
@@ -224,6 +257,7 @@ class TelegramMessageParser:
                 action="upload_document"
             )
             # send file to user
+            self.logger.debug("Sending generated image to user: %s" % str(update.effective_user.id))
             await context.bot.send_document(
                 chat_id=update.effective_chat.id,
                 document=image_url,
@@ -232,6 +266,7 @@ class TelegramMessageParser:
 
     # inline text messages
     async def inline_query(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.logger.info("Get a inline query from user: %s" % str(update.effective_user.id))
         # get query message
         query = update.inline_query.query   
 
@@ -241,6 +276,7 @@ class TelegramMessageParser:
         # check if user is allowed to use this bot
         allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
         if not allowed:
+            self.logger.debug("User %s is not allowed to use this bot." % str(update.effective_user.id))
             results = [
                 InlineQueryResultArticle(
                     id = str(uuid4()),
@@ -265,9 +301,11 @@ class TelegramMessageParser:
             ]
 
         # await update.inline_query.answer(results, cache_time=0, is_personal=True, switch_pm_text="Chat Privately 🤫", switch_pm_parameter="start")
+        self.logger.debug("Sending inline query back to user: %s" % str(update.effective_user.id))
         await update.inline_query.answer(results, cache_time=0, is_personal=True)
     
     async def inline_query_result_chosen(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.logger.info("Get a inline query result chosen from user %s with message ID %s" % (str(update.effective_user.id), update.chosen_inline_result.inline_message_id))
         # invalid user won't get a response
         try:
             # get userid and resultid
@@ -287,6 +325,7 @@ class TelegramMessageParser:
             response = "\"" + query + "\"\n\n" + self.message_manager.get_response(str(result_id), str(user_id), query)
 
             # edit message
+            self.logger.debug("Editing inline query result message %s from user %s" % (inline_message_id, str(update.effective_user.id)))
             await context.bot.edit_message_text(
                 response,
                 inline_message_id = inline_message_id,
@@ -328,6 +367,7 @@ class TelegramMessageParser:
 
     # start command
     async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.logger.info("Get a start command from user: %s" % str(update.effective_user.id))
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text="Hello, I'm a ChatGPT bot."
@@ -335,6 +375,7 @@ class TelegramMessageParser:
 
     # clear context command
     async def clear_context(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.logger.info("Get a clear context command from user: %s" % str(update.effective_user.id))
         allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
         if not allowed:
             await context.bot.send_message(
@@ -343,6 +384,7 @@ class TelegramMessageParser:
             )
             return
         self.message_manager.clear_context(str(update.effective_chat.id))
+        self.logger.debug("Context cleared for user: %s" % str(update.effective_user.id))
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text="Context cleared."
@@ -350,6 +392,7 @@ class TelegramMessageParser:
 
     # get user id command
     async def get_user_id(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.logger.info("Get a get user ID command from user: %s, username: %s, first_name: %s, last_name: %s" % (str(update.effective_user.id), update.effective_user.username, update.effective_user.first_name, update.effective_user.last_name))
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text=str(update.effective_user.id)
@@ -357,6 +400,7 @@ class TelegramMessageParser:
 
     # unknown command
     async def unknown(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.logger.info("Get an unknown command from user: %s" % str(update.effective_user.id))
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text="Sorry, I didn't understand that command."
