@@ -23,7 +23,7 @@ class ChatSession:
     
     @property
     def messageList(self):
-        return self.__messageList
+        return str(self.__latestTime) + " " +  str(self.__messageList)
     
     def update(self, contactTime, message, source):
         # check time
@@ -38,4 +38,13 @@ class ChatSession:
     def clear_context(self, clear_time):
         self.__latestTime = clear_time
         self.__messageList.clear()
+        
+if __name__ == "__main__":
+    chatA = ChatSession(1, "a")
+    chatB = ChatSession(2, "b")
+    print(chatA)
+    print(chatB)
+    chatA.update(3, "c", "user")
+    print(chatA)
+    print(chatB)
         
