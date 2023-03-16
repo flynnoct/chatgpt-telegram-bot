@@ -1,11 +1,12 @@
-import json
+# import json
 import copy
+from config_loader import ConfigLoader
 
 class ChatSession:
     
     __latestTime = 0
     __messageList = []
-    config_dict = {}
+    # config_dict = {}
     
     def __init__(self, contactTime, message):
         # first message
@@ -15,8 +16,8 @@ class ChatSession:
             {"role": "user", "content": message}
         )
         # load config
-        with open("config.json") as f:
-            self.config_dict = json.load(f)
+        # with open("config.json") as f:
+        #     self.config_dict = json.load(f)
             
     def __repr__(self):
         return str(self.messageList) + '\n'
@@ -27,7 +28,7 @@ class ChatSession:
     
     def update(self, contactTime, message, source):
         # check time
-        if (source == "user") and (contactTime - self.__latestTime > self.config_dict["wait_time"]) :
+        if (source == "user") and (contactTime - self.__latestTime > ConfigLoader["wait_time"]) :
             # refresh message list
             self.__messageList.clear()
         self.__latestTime = contactTime
