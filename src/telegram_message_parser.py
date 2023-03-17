@@ -54,6 +54,7 @@ class TelegramMessageParser:
         self.bot.add_handler(CommandHandler("start", self.start))
         self.bot.add_handler(CommandHandler("clear", self.clear_context))
         self.bot.add_handler(CommandHandler("getid", self.get_user_id))
+        self.bot.add_handler(CommandHandler("usage", self.usage))
 
         # special message handlers
         if self.config_dict["enable_voice"]:
@@ -104,8 +105,8 @@ class TelegramMessageParser:
 
         # send message to openai
         response = self.message_manager.get_response(
-            str(update.effective_chat.id), 
-            str(update.effective_user.id), 
+            str(update.effective_chat.id),
+            str(update.effective_user.id),
             message
             )
         # reply response to user
@@ -134,8 +135,8 @@ class TelegramMessageParser:
 
         # send message to openai
         response = self.message_manager.get_response(
-            str(update.effective_chat.id), 
-            str(update.effective_user.id), 
+            str(update.effective_chat.id),
+            str(update.effective_user.id),
             message
             )
 
@@ -177,13 +178,13 @@ class TelegramMessageParser:
 
             subprocess.call(
                 ['ffmpeg', '-i', file_id + '.ogg', file_id + '.wav'],
-                stdout=subprocess.DEVNULL, 
+                stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL
                 )
 
             with open(file_id + ".wav", "rb") as audio_file:
                 transcript = self.message_manager.get_transcript(
-                    str(update.effective_user.id), 
+                    str(update.effective_user.id),
                     audio_file
                     )
             os.remove(file_id + ".ogg")
@@ -194,8 +195,8 @@ class TelegramMessageParser:
             return
 
         response = self.message_manager.get_response(
-            str(update.effective_chat.id), 
-            str(update.effective_user.id), 
+            str(update.effective_chat.id),
+            str(update.effective_user.id),
             transcript
             )
         await update.message.reply_text("\"" + transcript + "\"\n\n" + response)
@@ -207,7 +208,7 @@ class TelegramMessageParser:
 
         # send prompt to openai image generation and get image url
         image_url, prompt = self.message_manager.get_generated_image_url(
-            str(update.effective_user.id), 
+            str(update.effective_user.id),
             message
             )
 
@@ -233,7 +234,7 @@ class TelegramMessageParser:
     # inline text messages
     async def inline_query(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         # get query message
-        query = update.inline_query.query   
+        query = update.inline_query.query
 
         if query == "":
             return
@@ -266,7 +267,7 @@ class TelegramMessageParser:
 
         # await update.inline_query.answer(results, cache_time=0, is_personal=True, switch_pm_text="Chat Privately 🤫", switch_pm_parameter="start")
         await update.inline_query.answer(results, cache_time=0, is_personal=True)
-    
+
     async def inline_query_result_chosen(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         # invalid user won't get a response
         try:
@@ -276,7 +277,7 @@ class TelegramMessageParser:
             inline_message_id = update.chosen_inline_result.inline_message_id
             query = update.chosen_inline_result.query
             # query_id = query[query.find("My_Memory_ID: ")+14:query.find("\n=======")]
-            
+
             # if query_id == "": # if no query_id, generate one
             #     query_id = str(uuid4())
             # else: # if query_id, remove it from query
@@ -298,7 +299,7 @@ class TelegramMessageParser:
                 )
         except Exception as e:
             pass
-            
+
 
     # file and photo messages
 
@@ -353,6 +354,14 @@ class TelegramMessageParser:
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text=str(update.effective_user.id)
+        )
+
+    async def usage(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        # Get OpenAI API usage
+        usage = self.message_manager.get_usage()
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=str(usage)
         )
 
     # unknown command
