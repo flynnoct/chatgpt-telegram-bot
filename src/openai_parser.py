@@ -14,6 +14,7 @@ __status__ = Dev
 
 import openai, json, os
 import datetime
+import requests
 
 class OpenAIParser:
 
@@ -34,7 +35,7 @@ class OpenAIParser:
                                                 {"role": "user", "content": message}
                                             ])
         return response["choices"][0]["message"]["content"]
-    
+
     def get_response(self, userid, context_messages):
         context_messages.insert(0, {"role": "system", "content": "You are a helpful assistant"})
         try:
@@ -56,6 +57,26 @@ class OpenAIParser:
         # image_url = "https://catdoctorofmonroe.com/wp-content/uploads/2020/09/iconfinder_cat_tied_275717.png"
         usage = 1 # reserve for future use
         return (image_url, usage)
+
+    def get_usage(self):
+        """Get the usage of the API for the last 30 days.
+
+        Example API call:
+            https://api.openai.com/dashboard/billing/usage?end_date=2023-04-01&start_date=2023-03-01
+
+        The API call return a json with a key total_usage with contains the cents of dollar used in the specified period.
+
+        Return the usage in dollars.
+        """
+        today = datetime.date.today()
+        last_month = today - datetime.timedelta(days=30)
+        url = "https://api.openai.com/dashboard/billing/usage?end_date={}&start_date={}".format(today, last_month)
+        headers = {"Authorization": "Bearer {}".format(self.config_dict["openai_api_key"])}
+
+        req = requests.get(url, headers=headers)
+        usage = req.json()["total_usage"]/100
+
+        return usage
 
 if __name__ == "__main__":
     openai_parser = OpenAIParser()

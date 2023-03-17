@@ -13,7 +13,7 @@ class MessageManager:
     config_dict = {}
     openai_parser = None
     access_manager = None
-    
+
     def __init__(self, access_manager):
         self.openai_parser = OpenAIParser()
         self.access_manager = access_manager
@@ -34,7 +34,7 @@ class MessageManager:
             self.userDict[id] = ChatSession(t, message)
         else:
             self.userDict[id].update(t, message, "user")
-        
+
         # send user info for statistics
         (answer, usage) = self.__sendMessage(
             user, self.userDict[id].messageList)
@@ -78,11 +78,17 @@ class MessageManager:
             print(e)
             return ""
 
+    def get_usage(self):
+        try:
+            return f"Usage in the last 30 days: {self.openai_parser.get_usage():.2f} $"
+        except Exception as e:
+            return f"Error: {e}"
+
     def __sendMessage(self, user, messageList):
         ans = self.openai_parser.get_response(user, messageList)
         return ans
-    
-    
+
+
 if __name__ == "__main__":
     acm = AccessManager()
     msm = MessageManager(acm)
