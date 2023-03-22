@@ -51,7 +51,6 @@ class MessageManager:
         except Exception as e:
             print(e)
 
-<<<<<<< HEAD
     def get_generated_image_url(self, user, prompt, num=1):
         self.logger.debug("Get generated image for user: %s" % user)
 

@@ -27,7 +27,7 @@ class ChatSession:
     
     @property
     def messageList(self):
-        return str(self.__latestTime) + " " +  str(self.__messageList)
+        return self.__messageList
     
     def update(self, contactTime, message, source):
         # check time
