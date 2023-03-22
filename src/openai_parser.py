@@ -73,4 +73,4 @@ class OpenAIParser:
 if __name__ == "__main__":
     openai_parser = OpenAIParser()
     # print(openai_parser._get_single_response("Tell me a joke."))
-    print(openai_parser.get_response("123", [{"role": "user", "content": "Tell me a joke."}]))
+    print(openai_parser.get_response("123", [{"role": "system", "content": "You are a cat and only can say Meaw"}, {"role": "user", "content": "Say something to me."}]))

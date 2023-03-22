@@ -75,7 +75,7 @@ class TelegramMessageParser:
         if ConfigLoader.get("enable_dalle"):
             self.bot.add_handler(CommandHandler("dalle", self.image_generation))
         if ConfigLoader.get("enable_custom_system_role"):
-            self.bot.add_handler(CommandHandler("systemrole", self.set_system_role))
+            self.bot.add_handler(CommandHandler("role", self.set_system_role))
         self.bot.add_handler(MessageHandler(filters.PHOTO | filters.AUDIO | filters.VIDEO, self.chat_file))
 
         # inline query handler
@@ -403,6 +403,7 @@ class TelegramMessageParser:
             )
             return
         self.message_manager.set_system_role(str(update.effective_chat.id), arg_str)
+        await update.message.reply_text("Role set and context cleared. You can say something to me now.")
 
     # unknown command
     async def unknown(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
