@@ -25,7 +25,8 @@ class ChatSession:
     def messageList(self):
         return [{"role": "system", "content": self.__system_role}] + self.__messageList
     
-    def set_system_role(self, message):
+    def set_system_role(self, contactTime, message):
+        self.clear_context(contactTime)
         self.__system_role = message
     
     def update(self, contactTime, message, source):
