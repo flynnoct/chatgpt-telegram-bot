@@ -1,30 +1,27 @@
 import time
 import datetime
 import os
-import json
 import logging
 from access_manager import AccessManager
 from chat_session import ChatSession
 from openai_parser import OpenAIParser
+from config_loader import ConfigLoader
 
 
 class MessageManager:
 
     userDict = {}
-    config_dict = {}
+    # config_dict = {}
     openai_parser = None
     access_manager = None
     
     def __init__(self, access_manager):
         self.openai_parser = OpenAIParser()
         self.access_manager = access_manager
-
         # setup logger
         self.logger = logging.getLogger("MessageManager")
-
-        # load config
-        with open("config.json") as f:
-            self.config_dict = json.load(f)
+        
+        self.access_manager = AccessManager()
 
     def get_response(self, id, user, message):
         self.logger.debug("Get response for user: %s" % id)
@@ -56,13 +53,10 @@ class MessageManager:
 
     def get_generated_image_url(self, user, prompt, num=1):
         self.logger.debug("Get generated image for user: %s" % user)
-        # Temporary fix by @Flynn, will be fixed in the next version
-        with open("config.json") as f:
-            super_users = json.load(f)["super_users"]
-        if user in super_users:
+
+        if user in ConfigLoader.get("super_users"):
             url, _ = self.openai_parser.image_generation(user, prompt)
-            return url, "Hey boss, it's on your account. 💰"
-        ############################
+            return (url, "Hey boss, it's on your account. 💰")
 
         (permission, clue) = self.access_manager.check_image_generation_allowed(user, num)
         if permission == False:

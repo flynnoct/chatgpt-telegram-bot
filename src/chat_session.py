@@ -1,12 +1,13 @@
-import json
+# import json
 import copy
 import logging
+from config_loader import ConfigLoader
 
 class ChatSession:
     
     __latestTime = 0
     __messageList = []
-    config_dict = {}
+    # config_dict = {}
     
     def __init__(self, contactTime, message):
         # setup logger
@@ -18,8 +19,8 @@ class ChatSession:
             {"role": "user", "content": message}
         )
         # load config
-        with open("config.json") as f:
-            self.config_dict = json.load(f)
+        # with open("config.json") as f:
+        #     self.config_dict = json.load(f)
             
     def __repr__(self):
         return str(self.messageList) + '\n'
@@ -30,7 +31,7 @@ class ChatSession:
     
     def update(self, contactTime, message, source):
         # check time
-        if (source == "user") and (contactTime - self.__latestTime > self.config_dict["wait_time"]) :
+        if (source == "user") and (contactTime - self.__latestTime > ConfigLoader.get("wait_time")) :
             # refresh message list
             self.logger.info("Context expired, clear context.")
             self.__messageList.clear()
@@ -42,4 +43,13 @@ class ChatSession:
     def clear_context(self, clear_time):
         self.__latestTime = clear_time
         self.__messageList.clear()
+        
+if __name__ == "__main__":
+    chatA = ChatSession(1, "a")
+    chatB = ChatSession(2, "b")
+    print(chatA)
+    print(chatB)
+    chatA.update(3, "c", "user")
+    print(chatA)
+    print(chatB)
         

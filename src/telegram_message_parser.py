@@ -19,10 +19,11 @@ import logging
 from uuid import uuid4
 from message_manager import MessageManager
 from access_manager import AccessManager
+from config_loader import ConfigLoader
 
-with open("config.json") as f:
-    config_dict = json.load(f)
-if config_dict["enable_voice"]:
+# with open("config.json") as f:
+#     config_dict = json.load(f)
+if ConfigLoader.get("enable_voice"):
     import subprocess
 
 # formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -31,15 +32,15 @@ if config_dict["enable_voice"]:
 
 class TelegramMessageParser:
 
-    config_dict = {}
+    # config_dict = {}
 
     def __init__(self):
 
         print("Bot is running, press Ctrl+C to stop...\nRecording log to ./bot.log")
 
         # load config
-        with open("config.json") as f:
-            self.config_dict = json.load(f)
+        # with open("config.json") as f:
+        #     self.config_dict = json.load(f)
 
         # init logging, TODO integrate with config module
         logging.basicConfig(
@@ -51,7 +52,7 @@ class TelegramMessageParser:
         self.logger = logging.getLogger("TelegramMessageParser")
 
         # init bot
-        self.bot = ApplicationBuilder().token(self.config_dict["telegram_bot_token"]).build()
+        self.bot = ApplicationBuilder().token(ConfigLoader.get("telegram_bot_token")).build()
         # add handlers
         self.add_handlers()
 
@@ -72,14 +73,14 @@ class TelegramMessageParser:
         self.bot.add_handler(CommandHandler("getid", self.get_user_id))
 
         # special message handlers
-        if self.config_dict["enable_voice"]:
+        if ConfigLoader.get("enable_voice"):
             self.bot.add_handler(MessageHandler(filters.VOICE, self.chat_voice))
-        if self.config_dict["enable_dalle"]:
+        if ConfigLoader.get("enable_dalle"):
             self.bot.add_handler(CommandHandler("dalle", self.image_generation))
         self.bot.add_handler(MessageHandler(filters.PHOTO | filters.AUDIO | filters.VIDEO, self.chat_file))
 
         # inline query handler
-        if self.config_dict["enable_inline"]:
+        if ConfigLoader.get("enable_inline"):
             self.bot.add_handler(InlineQueryHandler(self.inline_query))
             self.bot.add_handler(ChosenInlineResultHandler(self.inline_query_result_chosen))
 
