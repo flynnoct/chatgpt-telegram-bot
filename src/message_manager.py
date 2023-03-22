@@ -1,7 +1,6 @@
 import time
 import datetime
 import os
-import json
 import logging
 from access_manager import AccessManager
 from chat_session import ChatSession
@@ -52,6 +51,7 @@ class MessageManager:
         except Exception as e:
             print(e)
 
+<<<<<<< HEAD
     def get_generated_image_url(self, user, prompt, num=1):
         self.logger.debug("Get generated image for user: %s" % user)
 

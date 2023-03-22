@@ -38,3 +38,4 @@ class ConfigLoader:
     def get(key):
         ConfigLoader.load_config()
         return ConfigLoader._config[key]
+
