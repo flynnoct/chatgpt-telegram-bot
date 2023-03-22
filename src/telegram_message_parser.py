@@ -402,8 +402,8 @@ class TelegramMessageParser:
                 text = "Sorry, you are not allowed to use this bot."
             )
             return
-        self.message_manager.set_system_role(str(update.effective_chat.id), arg_str)
-        await update.message.reply_text("Role set and context cleared. You can say something to me now.")
+        reply_message = self.message_manager.set_system_role(str(update.effective_chat.id), str(update.effective_user.id), arg_str)
+        await update.message.reply_text(reply_message)
 
     # unknown command
     async def unknown(self, update: Update, context: ContextTypes.DEFAULT_TYPE):

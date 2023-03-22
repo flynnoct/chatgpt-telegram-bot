@@ -85,7 +85,7 @@ class MessageManager:
         # send first sentence
         (answer, usage) = self.__sendMessage(user, 
                 [{"role": "system", "content": message}, 
-                 {"role": "user", "content":"跟我打招呼"}])
+                 {"role": "user", "content":"Say hello to me."}])
         self.access_manager.update_usage_info(user, usage, "chat")
         return answer
         
