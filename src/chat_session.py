@@ -1,5 +1,6 @@
 import json
 import copy
+import logging
 
 class ChatSession:
     
@@ -8,6 +9,8 @@ class ChatSession:
     config_dict = {}
     
     def __init__(self, contactTime, message):
+        # setup logger
+        self.logger = logging.getLogger("ChatSession")
         # first message
         self.__messageList = copy.deepcopy([])
         self.__latestTime = contactTime
@@ -29,6 +32,7 @@ class ChatSession:
         # check time
         if (source == "user") and (contactTime - self.__latestTime > self.config_dict["wait_time"]) :
             # refresh message list
+            self.logger.info("Context expired, clear context.")
             self.__messageList.clear()
         self.__latestTime = contactTime
         self.__messageList.append(

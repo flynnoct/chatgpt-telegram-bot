@@ -25,6 +25,9 @@ with open("config.json") as f:
 if config_dict["enable_voice"]:
     import subprocess
 
+# formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+# file_handler = logging.FileHandler("./bot.log")
+
 
 class TelegramMessageParser:
 
@@ -32,26 +35,20 @@ class TelegramMessageParser:
 
     def __init__(self):
 
+        print("Bot is running, press Ctrl+C to stop...\nRecording log to ./bot.log")
+
         # load config
         with open("config.json") as f:
             self.config_dict = json.load(f)
 
-        # init logging
+        # init logging, TODO integrate with config module
+        logging.basicConfig(
+            format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            filename = "./bot.log",
+            level = "INFO"
+            )
+
         self.logger = logging.getLogger("TelegramMessageParser")
-
-        # config logging, only done once in this class, TODO: integrate with config_manager classes
-        self.logger.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-
-        file_handler = logging.FileHandler("./bot.log")
-        file_handler.setLevel(logging.INFO)
-        file_handler.setFormatter(formatter)
-        self.logger.addHandler(file_handler)
-
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.DEBUG)
-        console_handler.setFormatter(formatter)
-        self.logger.addHandler(console_handler)
 
         # init bot
         self.bot = ApplicationBuilder().token(self.config_dict["telegram_bot_token"]).build()
@@ -108,7 +105,6 @@ class TelegramMessageParser:
         # check if user is allowed
         allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
         if not allowed:
-            self.logger.debug("User %s is not allowed to use this bot." % str(update.effective_user.id))
             await context.bot.send_message(
                 chat_id = update.effective_chat.id,
                 text = "Sorry, you are not allowed to use this bot."
@@ -147,7 +143,6 @@ class TelegramMessageParser:
         # check if user is allowed
         allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
         if not allowed:
-            self.logger.debug("User %s is not allowed to use this bot." % str(update.effective_user.id))
             await context.bot.send_message(
                 chat_id = update.effective_chat.id,
                 text = "Sorry, you are not allowed to use this bot."
@@ -175,7 +170,6 @@ class TelegramMessageParser:
         # check if user is allowed to use this bot
         allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
         if not allowed:
-            self.logger.debug("User %s is not allowed to use this bot." % str(update.effective_user.id))
             await context.bot.send_message(
                 chat_id = update.effective_chat.id,
                 text = "Sorry, you are not allowed to use this bot."
@@ -222,7 +216,6 @@ class TelegramMessageParser:
             return
 
         # send message to openai
-        self.logger.debug("Sending message to OpenAI Whisper from user: %s" % str(update.effective_user.id))
         response = self.message_manager.get_response(
             str(update.effective_chat.id), 
             str(update.effective_user.id), 
@@ -233,7 +226,7 @@ class TelegramMessageParser:
 
     # image_generation command, aka DALLE
     async def image_generation(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        self.logger.info("Get a image generation command from user: %s" % str(update.effective_user.id))
+        self.logger.info("Get an image generation command from user: %s" % str(update.effective_user.id))
         # remove dalle command from message
         message = update.effective_message.text.replace("/dalle", "")
 
@@ -276,7 +269,6 @@ class TelegramMessageParser:
         # check if user is allowed to use this bot
         allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
         if not allowed:
-            self.logger.debug("User %s is not allowed to use this bot." % str(update.effective_user.id))
             results = [
                 InlineQueryResultArticle(
                     id = str(uuid4()),

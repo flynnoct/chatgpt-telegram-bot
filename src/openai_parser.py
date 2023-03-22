@@ -14,12 +14,16 @@ __status__ = Dev
 
 import openai, json, os
 import datetime
+import logging
 
 class OpenAIParser:
 
     config_dict = {}
 
     def __init__(self):
+        # setup logger
+        self.logger = logging.getLogger("OpenAIParser")
+
         # load config
         with open("config.json") as f:
             self.config_dict = json.load(f)
@@ -36,20 +40,28 @@ class OpenAIParser:
         return response["choices"][0]["message"]["content"]
     
     def get_response(self, userid, context_messages):
+        self.logger.debug("Get OpenAI GPT response for user: %s" % userid)
         context_messages.insert(0, {"role": "system", "content": "You are a helpful assistant"})
         try:
             response = openai.ChatCompletion.create(model = "gpt-3.5-turbo",
                                                 messages = context_messages)
             return (response["choices"][0]["message"]["content"], response["usage"]["total_tokens"])
         except Exception as e:
-            return (str(e) + "\nSorry, I am not feeling well. Please try again.", 0)
+            self.logger.error("OpenAI GPT request for user %s with error: %s" % (userid, str(e)))
+            return ("Oops, something went wrong. Please try again later.", 0)
 
     def speech_to_text(self, userid, audio_file):
+        self.logger.debug("Get OpenAI Speech to Text for user: %s" % userid)
         # transcript = openai.Audio.transcribe("whisper-1", audio_file, language="zh")
-        transcript = openai.Audio.transcribe("whisper-1", audio_file)
+        try:
+            transcript = openai.Audio.transcribe("whisper-1", audio_file)
+        except Exception as e:
+            self.logger.error("OpenAI Speech to Text request for user %s with error: %s" % (userid, str(e)))
+            return ""
         return transcript["text"]
 
     def image_generation(self, userid, prompt):
+        self.logger.debug("Get OpenAI Image Generation for user: %s" % userid)
         # response = openai.Image.create(prompt = prompt, n=1, size = "512x512", user = userid)
         # image_url = response["data"][0]["url"]
         # for debug use
