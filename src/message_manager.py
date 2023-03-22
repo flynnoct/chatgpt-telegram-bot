@@ -74,6 +74,13 @@ class MessageManager:
         #     return clue
 
         return self.openai_parser.speech_to_text(user, audio_file)
+    
+    def set_system_role(self, id, message):
+        self.logger.debug("Set system role for chat: %s" % id)
+        t = time.time()
+        if id not in self.userDict:
+            self.userDict[id] = ChatSession(t, message)       
+        self.userDict[id].set_system_role(message)   
 
     def __sendMessage(self, user, messageList):
         ans = self.openai_parser.get_response(user, messageList)

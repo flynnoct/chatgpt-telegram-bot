@@ -15,6 +15,6 @@
     ], 
     "image_generation_limit_per_day": 5,     
     "enable_inline": false,
-    "enable_custom_system_role": True,
+    "enable_custom_system_role": true,
     "system_role": "You are a helpful assistant"
 }
