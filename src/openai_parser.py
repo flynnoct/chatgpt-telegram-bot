@@ -42,7 +42,7 @@ class OpenAIParser:
     
     def get_response(self, userid, context_messages):
         self.logger.debug("Get OpenAI GPT response for user: %s" % userid)
-        context_messages.insert(0, {"role": "system", "content": "You are a helpful assistant"})
+        # context_messages.insert(0, {"role": "system", "content": "You are a helpful assistant"})
         try:
             response = openai.ChatCompletion.create(model = "gpt-3.5-turbo",
                                                 messages = context_messages)
@@ -73,4 +73,4 @@ class OpenAIParser:
 if __name__ == "__main__":
     openai_parser = OpenAIParser()
     # print(openai_parser._get_single_response("Tell me a joke."))
-    print(openai_parser.get_response("123", [{"role": "user", "content": "Tell me a joke."}]))
+    print(openai_parser.get_response("123", [{"role": "system", "content": "You are a cat and only can say Meaw"}, {"role": "user", "content": "Say something to me."}]))

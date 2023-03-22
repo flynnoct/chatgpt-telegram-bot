@@ -26,9 +26,6 @@ from config_loader import ConfigLoader
 if ConfigLoader.get("enable_voice"):
     import subprocess
 
-# formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-# file_handler = logging.FileHandler("./bot.log")
-
 
 class TelegramMessageParser:
 
@@ -77,6 +74,8 @@ class TelegramMessageParser:
             self.bot.add_handler(MessageHandler(filters.VOICE, self.chat_voice))
         if ConfigLoader.get("enable_dalle"):
             self.bot.add_handler(CommandHandler("dalle", self.image_generation))
+        if ConfigLoader.get("enable_custom_system_role"):
+            self.bot.add_handler(CommandHandler("role", self.set_system_role))
         self.bot.add_handler(MessageHandler(filters.PHOTO | filters.AUDIO | filters.VIDEO, self.chat_file))
 
         # inline query handler
@@ -133,7 +132,7 @@ class TelegramMessageParser:
     async def chat_text_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         self.logger.info("Get a chat message (triggered by command) from user: %s" % str(update.effective_user.id))
         # get message
-        message = update.effective_message.text
+        message = " ".join(context.args)
 
         # sending typing action
         await context.bot.send_chat_action(
@@ -229,7 +228,8 @@ class TelegramMessageParser:
     async def image_generation(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         self.logger.info("Get an image generation command from user: %s" % str(update.effective_user.id))
         # remove dalle command from message
-        message = update.effective_message.text.replace("/dalle", "")
+        # message = update.effective_message.text.replace("/dalle", "")
+        message = " ".join(context.args)
 
         # send prompt to openai image generation and get image url
         image_url, prompt = self.message_manager.get_generated_image_url(
@@ -390,6 +390,20 @@ class TelegramMessageParser:
             chat_id=update.effective_chat.id,
             text=str(update.effective_user.id)
         )
+
+    # set system role command
+    async def set_system_role(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        arg_str = " ".join(context.args)
+        self.logger.info("Set system role to %s from user: %s" % (arg_str, str(update.effective_user.id)))
+        allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
+        if not allowed:
+            await context.bot.send_message(
+                chat_id = update.effective_chat.id,
+                text = "Sorry, you are not allowed to use this bot."
+            )
+            return
+        reply_message = self.message_manager.set_system_role(str(update.effective_chat.id), str(update.effective_user.id), arg_str)
+        await update.message.reply_text(reply_message)
 
     # unknown command
     async def unknown(self, update: Update, context: ContextTypes.DEFAULT_TYPE):

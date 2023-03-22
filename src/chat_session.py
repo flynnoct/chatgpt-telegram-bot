@@ -1,33 +1,33 @@
-# import json
 import copy
 import logging
 from config_loader import ConfigLoader
 
 class ChatSession:
     
-    __latestTime = 0
-    __messageList = []
-    # config_dict = {}
+    # __latestTime = 0
+    # __messageList = []
     
     def __init__(self, contactTime, message):
         # setup logger
         self.logger = logging.getLogger("ChatSession")
         # first message
-        self.__messageList = copy.deepcopy([])
+        self.__messageList = []
+        self.__system_role = ConfigLoader.get('system_role')
         self.__latestTime = contactTime
         self.__messageList.append(
             {"role": "user", "content": message}
         )
-        # load config
-        # with open("config.json") as f:
-        #     self.config_dict = json.load(f)
             
     def __repr__(self):
         return str(self.messageList) + '\n'
     
     @property
     def messageList(self):
-        return self.__messageList
+        return [{"role": "system", "content": self.__system_role}] + self.__messageList
+    
+    def set_system_role(self, contactTime, message):
+        self.clear_context(contactTime)
+        self.__system_role = message
     
     def update(self, contactTime, message, source):
         # check time
@@ -35,6 +35,7 @@ class ChatSession:
             # refresh message list
             self.logger.info("Context expired, clear context.")
             self.__messageList.clear()
+            self.__system_role = ConfigLoader.get('system_role')
         self.__latestTime = contactTime
         self.__messageList.append(
             {"role": source, "content": message}
@@ -43,6 +44,7 @@ class ChatSession:
     def clear_context(self, clear_time):
         self.__latestTime = clear_time
         self.__messageList.clear()
+        self.__system_role = ConfigLoader.get('system_role')
         
 if __name__ == "__main__":
     chatA = ChatSession(1, "a")
