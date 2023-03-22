@@ -27,11 +27,11 @@ class ChatSession:
     
     @property
     def messageList(self):
-        return str(self.__latestTime) + " " +  str(self.__messageList)
+        return self.__messageList
     
     def update(self, contactTime, message, source):
         # check time
-        if (source == "user") and (contactTime - self.__latestTime > ConfigLoader["wait_time"]) :
+        if (source == "user") and (contactTime - self.__latestTime > ConfigLoader.get("wait_time")) :
             # refresh message list
             self.logger.info("Context expired, clear context.")
             self.__messageList.clear()

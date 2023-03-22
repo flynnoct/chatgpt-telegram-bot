@@ -15,21 +15,22 @@ __status__ = Dev
 import openai, json, os
 import datetime
 import logging
+from config_loader import ConfigLoader
 
 class OpenAIParser:
 
-    config_dict = {}
+    # config_dict = {}
 
     def __init__(self):
         # setup logger
         self.logger = logging.getLogger("OpenAIParser")
 
         # load config
-        with open("config.json") as f:
-            self.config_dict = json.load(f)
+        # with open("config.json") as f:
+        #     self.config_dict = json.load(f)
         # init openai
         # openai.organization = self.config_dict["ORGANIZATION"] if "ORGANIZATION" in self.config_dict else "Personal"
-        openai.api_key = self.config_dict["openai_api_key"]
+        openai.api_key = ConfigLoader.get("openai_api_key")
 
     def _get_single_response(self, message):
         response = openai.ChatCompletion.create(model = "gpt-3.5-turbo",

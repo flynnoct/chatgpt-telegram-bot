@@ -55,10 +55,9 @@ class MessageManager:
     def get_generated_image_url(self, user, prompt, num=1):
         self.logger.debug("Get generated image for user: %s" % user)
 
-        if user in ConfigLoader['super_users']:
+        if user in ConfigLoader.get("super_users"):
             url, _ = self.openai_parser.image_generation(user, prompt)
             return (url, "Hey boss, it's on your account. 💰")
-        ############################
 
         (permission, clue) = self.access_manager.check_image_generation_allowed(user, num)
         if permission == False:
