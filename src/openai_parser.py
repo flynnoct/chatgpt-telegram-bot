@@ -15,6 +15,7 @@ __status__ = Dev
 import openai, json, os
 import datetime
 import logging
+import signal
 from config_loader import ConfigLoader
 
 class OpenAIParser:
@@ -44,12 +45,22 @@ class OpenAIParser:
         self.logger.debug("Get OpenAI GPT response for user: %s" % userid)
         # context_messages.insert(0, {"role": "system", "content": "You are a helpful assistant"})
         try:
-            response = openai.ChatCompletion.create(model = "gpt-3.5-turbo",
-                                                messages = context_messages)
+
+            def timeout_handler(signum, frame):
+                raise Exception("Timeout")
+            signal.signal(signal.SIGALRM, timeout_handler)
+            signal.alarm(int(ConfigLoader.get("openai_timeout")))
+            #### Timer ####
+            response = openai.ChatCompletion.create(
+                model = "gpt-3.5-turbo",
+                messages = context_messages
+                )
+            ###############
+            signal.alarm(0)
             return (response["choices"][0]["message"]["content"], response["usage"]["total_tokens"])
         except Exception as e:
             self.logger.error("OpenAI GPT request for user %s with error: %s" % (userid, str(e)))
-            return ("Oops, something went wrong. Please try again later.", 0)
+            return ("Oops, something went wrong with OpenAI. Please try again later.", 0)
 
     def speech_to_text(self, userid, audio_file):
         self.logger.debug("Get OpenAI Speech to Text for user: %s" % userid)
