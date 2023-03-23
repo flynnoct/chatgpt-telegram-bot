@@ -13,6 +13,7 @@
         "<SUPER_USER_ID_1>",    
         "<SUPER_USER_ID_2>"
     ], 
+    "openai_timeout": 60,
     "image_generation_limit_per_day": 5,     
     "enable_inline": false,
     "enable_custom_system_role": true,

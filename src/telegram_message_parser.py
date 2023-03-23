@@ -43,13 +43,13 @@ class TelegramMessageParser:
         logging.basicConfig(
             format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
             filename = "./bot.log",
-            level = "INFO"
+            level = "DEBUG"
             )
 
         self.logger = logging.getLogger("TelegramMessageParser")
 
         # init bot
-        self.bot = ApplicationBuilder().token(ConfigLoader.get("telegram_bot_token")).build()
+        self.bot = ApplicationBuilder().token(ConfigLoader.get("telegram_bot_token")).concurrent_updates(True).build()
         # add handlers
         self.add_handlers()
 
