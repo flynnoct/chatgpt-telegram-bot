@@ -88,7 +88,7 @@ class ConfigShell (Cmd):
         return True
 
     def postloop(self) -> None:
-        with open("./config.json", "w") as f:
+        with open("../config.json", "w") as f:
             json.dump(config_dict, f)
         print("The config.json file is saved.")
         return super().postloop()
@@ -99,7 +99,7 @@ def update_user_list(index, type="Update one item"):
     print("a. add a new user")
     print("b. remove a user")
     print("c. clear the list")
-    print("d. exit")
+    print("d. back")
 
     while True:
         print("Input 'a', 'b', 'c' or 'd':")
@@ -176,8 +176,8 @@ def update_item(index, type="Update one item"):
 
 
 if __name__ == "__main__":
-    if os.path.exists("./config.json"):
-        with open("./config.json") as f:
+    if os.path.exists("../config.json"):
+        with open("../config.json") as f:
             config_dict = json.load(f)
             allowed_users = config_dict["allowed_users"]
             super_users = config_dict["super_users"]
