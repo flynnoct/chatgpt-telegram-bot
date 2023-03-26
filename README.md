@@ -108,6 +108,10 @@ bash ./bin/restart_bot.sh # restart the bot
 bash ./bin/stop_bot.sh # stop the bot
 ```
 
+## For developers
+
+Documentation is provided under [docs](./docs) for developers who wants to customize the Bot.
+
 ## 📚 Release Notes
 
 The latest released version is [here](https://github.com/flynnoct/chatgpt-telegram-bot/releases/latest).
