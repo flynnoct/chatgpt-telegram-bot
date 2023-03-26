@@ -13,7 +13,9 @@ item_dict = {"1": "openai_api_key", "2": "telegram_bot_token",
              "3": "allow_all_users", "4": "allowed_users",
              "5": "enable_voice", "6": "wait_time",
              "7": "enable_dalle", "8": "super_users",
-             "9": "image_generation_limit_per_day", "10": "enable_inline"}
+             "9": "image_generation_limit_per_day", "10": "enable_inline",
+             "11": "openai_timeout", "12": "enable_custom_system_role",
+             "13": "system_role"}
 
 
 class ConfigShell (Cmd):
@@ -33,7 +35,7 @@ class ConfigShell (Cmd):
     def do_A(self, args):
         print("Start to config the file ... \n")
 
-        for i in range(1, 11):
+        for i in range(1, 14):
             if i == 4 or i == 8:
                 update_user_list(str(i), "Config all items")
             else:
@@ -50,8 +52,11 @@ class ConfigShell (Cmd):
         print("7. enable_dalle")
         print("8. super_users list")
         print("9. image_generation_limit_per_day")
-        print("10. enable_inline\n")
-        print("Input the item number (1-10):")
+        print("10. enable_inline")
+        print("11. openai_timeout")
+        print("12. enable_custom_system_role")
+        print("13. system_role")
+        print("Input the item number (1-13):")
 
     def do_1(self, args):
         update_item("1")
@@ -77,6 +82,15 @@ class ConfigShell (Cmd):
     def do_10(self, args):
         update_item("10")
 
+    def do_11(self, args):
+        update_item("11")
+
+    def do_12(self, args):
+        update_item("12")
+
+    def do_13(self, args):
+        update_item("13")
+
     def do_4(self, args):
         update_user_list("4")
 
@@ -89,7 +103,7 @@ class ConfigShell (Cmd):
 
     def postloop(self) -> None:
         with open("../config.json", "w") as f:
-            json.dump(config_dict, f)
+            json.dump(config_dict, f, indent=4)
         print("The config.json file is saved.")
         return super().postloop()
 
@@ -108,22 +122,42 @@ def update_user_list(index, type="Update one item"):
         if data == 'a':
             print("Input ID of the new user:")
             userid = sys.stdin.readline().strip('\n')
-            allowed_users.append(str(userid))
-            print("New user is added to the allowed list.")
+
+            if index == "4":
+                allowed_users.append(str(userid))
+            else:
+                super_users.append(str(userid))
+
+            print("New user is added to the list.\n")
             break
+
         elif data == 'b':
             print("Input ID of the user:")
             userid = sys.stdin.readline().strip('\n')
-            if not allowed_users.count(str(userid)):
-                print("*** Error. The user is not in the allowed list.")
+
+            if index == "4":
+                if not allowed_users.count(str(userid)):
+                    print("*** Error. The user is not in the list.")
+                else:
+                    allowed_users.remove(str(userid))
+                    print("The user is removed from the list.")
+                    break
             else:
-                allowed_users.remove(str(userid))
-                print("The user is removed from the allowed list.")
-                break
+                if not super_users.count(str(userid)):
+                    print("*** Error. The user is not in the list.")
+                else:
+                    super_users.remove(str(userid))
+                    print("The user is removed from the list.")
+                    break
+
         elif data == 'c':
-            allowed_users.clear()
-            print("The allowed list is cleared.\n")
+            if index == "4":
+                allowed_users.clear()
+            else:
+                super_users.clear()
+            print("The list is cleared.\n")
             break
+
         elif data == 'd':
             print("")
             break
@@ -132,11 +166,11 @@ def update_user_list(index, type="Update one item"):
 
     if type == "Update one item":
         print(
-            "\nInput (1-10) to update another item or type 'exit' to finish configuration.\n")
+            "\nInput (1-13) to update another item or type 'exit' to finish configuration.\n")
 
 
 def update_item(index, type="Update one item"):
-    if index == "3" or index == "5" or index == "7" or index == "10":
+    if index == "3" or index == "5" or index == "7" or index == "10" or index == "12":
         print("Set <", item_dict[index], "> to 'true' or 'false':")
 
         while True:
@@ -145,7 +179,7 @@ def update_item(index, type="Update one item"):
                 print("*** Invalid input! Please input 'true' or 'false':")
             else:
                 break
-    elif index == "6" or index == "9":
+    elif index == "6" or index == "9" or index == "11":
         print("Input your <", item_dict[index], ">:")
         while True:
             data = sys.stdin.readline().strip('\n')
@@ -169,8 +203,8 @@ def update_item(index, type="Update one item"):
 
     if type == "Update one item":
         print(
-            "\nInput (1-10) to update another item or type 'exit' to finish configuration.\n")
-    if index == "10" and type == "Config all items":
+            "\nInput (1-13) to update another item or type 'exit' to finish configuration.\n")
+    if index == "13" and type == "Config all items":
         config.postloop()
         config.do_exit()
 
@@ -179,8 +213,15 @@ if __name__ == "__main__":
     if os.path.exists("../config.json"):
         with open("../config.json") as f:
             config_dict = json.load(f)
+
             allowed_users = config_dict["allowed_users"]
             super_users = config_dict["super_users"]
+
+            if "<USER_ID_1>" in allowed_users:
+                allowed_users.clear()
+
+            if "<SUPER_USER_ID_1>" in super_users:
+                super_users.clear()
 
     try:
         os.system('cls')
