@@ -43,7 +43,7 @@ class TelegramMessageParser:
         logging.basicConfig(
             format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
             filename = "./bot.log",
-            level = "DEBUG"
+            level = "INFO"
             )
 
         self.logger = logging.getLogger("TelegramMessageParser")
