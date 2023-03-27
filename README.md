@@ -118,7 +118,7 @@ The latest released version is [here](https://github.com/flynnoct/chatgpt-telegr
 
 The release notes are [here](/docs/release_notes.md).
 
-More interesting new features are comming soon!
+More interesting new features are coming soon!
 
 ## 🪪 License
 
