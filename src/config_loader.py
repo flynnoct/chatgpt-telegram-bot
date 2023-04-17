@@ -37,5 +37,10 @@ class ConfigLoader:
     @staticmethod
     def get(key):
         ConfigLoader.load_config()
+        # If the key is not in the config file, return the default value
+        if key not in ConfigLoader._config:
+            with open("config.json.template", "r") as f:
+                config_dict_template = json.load(f)
+                return config_dict_template[key]
         return ConfigLoader._config[key]
 
