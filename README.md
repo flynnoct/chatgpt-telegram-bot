@@ -81,6 +81,8 @@ pip install -r requirements.txt
 
 The config file includes sensitive information, such as telegram_token and openai_api_key, and we only release the corresponding template `config.json.template`. Therefore, you need to create a new `config.json` file by replacing the relative fields in the template with your own. Then, you can use the `config.py` script to udpate the config file through command line.
 
+**Recommended:** We suggest keeping `config.json.template` unmodified because we need to read default parameter values from it. For backward compatibility, it is recommended to check the template for newly added parameters when you update to a new release.
+
 ```bash
 cp config.json.template config.json
 cd bin
