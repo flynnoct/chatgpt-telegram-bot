@@ -4,7 +4,8 @@
 
 - System role customization is now supported.
 - Update the config file from command line is now supported.
-- Some bugs fixed.
+- Logging system is now completed for debug purposes.
+- Some bugs are fixed.
 
 ## v1.2.2
 

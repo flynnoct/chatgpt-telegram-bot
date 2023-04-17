@@ -5,11 +5,9 @@
 ## 🎉 News
 
 - **System Role customization** is now supported! Users can customize their own Bot's character and tone!
-- **DALL·E, the OpenAI Image Generation Model**, is now supported! Send a short prompt to the Bot and get your own painting!
-- **Whisper, the OpenAI Intelligent Speech Recognizer**, is now supported! Now chat with the Bot with audio messages!
-- **Telegram Inline Mode (Beta)** is now supported! You can ask @BotFather to enable **both inline mode & inline feedback to 100%** for your Bot and use it in any private chat with a contact and group chat (even without inviting the bot as a member).
-- **Important privacy protection strategy** is deployed! The Bot is unable (and of course we won't) to collect any message in group chat except user prompts.
 - **Update the config.json file through command line** is now supported.
+- **Logging system** is completed for debug purpose.
+- **Telegram Inline Mode (Beta)** is now supported! You can ask @BotFather to enable **both inline mode & inline feedback to 100%** for your Bot and use it in any private chat with a contact and group chat (even without inviting the bot as a member).
 
 ## 🐱 Introduction
 
@@ -25,11 +23,12 @@ We hope you enjoy it!
 
 The Telegram Bot features the following functions:
 
-- An AI consultant, based on OpenAI ChatGPT, interacts in a conversational way. You can customize the Bot's character according to preference.
-- A flexible speech recognizer which supports audio interaction.
-- An AI painter reponses to user's requirement prompt.
+- **ChatGPT, the AI consultant**. You can customize the Bot's character according to preference.
+- **DALL·E, the Image Generation AI Model**. Send a short prompt to the Bot and get your own painting!
+- **Whisper, the Intelligent Speech Recognizer**. The Bot can read your voice messages!
+- **Comprehensive privacy protection**. The Bot is unable (and of course we won't) to collect any message in group chat except user prompts.
 
-Additonal functions are also implemented:
+Additonal features:
 
 - (Beta) Telegram _inline mode_ is supported to invoke the Bot in a private chat with a contact and a group without bot as a member.
 - User Whitelist to control who can use the bot. You can also set `allow_all_users` to `true` to allow all users to use the Bot.
@@ -118,7 +117,7 @@ The latest released version is [here](https://github.com/flynnoct/chatgpt-telegr
 
 The release notes are [here](/docs/release_notes.md).
 
-More interesting new features are comming soon!
+More interesting new features are coming soon!
 
 ## 🪪 License
 
