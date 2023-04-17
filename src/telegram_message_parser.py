@@ -38,7 +38,7 @@ class TelegramMessageParser:
         #     self.config_dict = json.load(f)
 
         # init bot
-        self.bot = ApplicationBuilder().token(ConfigLoader.get("telegram_bot_token")).concurrent_updates(True).build()
+        self.bot = ApplicationBuilder().token(ConfigLoader.get("telegram")["bot_token"]).concurrent_updates(True).build()
         # add handlers
         self.add_handlers()
 
@@ -64,14 +64,14 @@ class TelegramMessageParser:
         # special message handlers
         if ConfigLoader.get("voice_message")["enable_voice"]:
             self.bot.add_handler(MessageHandler(filters.VOICE, self.chat_voice))
-        if ConfigLoader.get("enable_dalle"):
+        if ConfigLoader.get("image_generation")["enable_dalle"]:
             self.bot.add_handler(CommandHandler("dalle", self.image_generation))
-        if ConfigLoader.get("enable_custom_system_role"):
+        if ConfigLoader.get("openai")["enable_custom_system_role"]:
             self.bot.add_handler(CommandHandler("role", self.set_system_role))
         self.bot.add_handler(MessageHandler(filters.PHOTO | filters.AUDIO | filters.VIDEO, self.chat_file))
 
         # inline query handler
-        if ConfigLoader.get("enable_inline"):
+        if ConfigLoader.get("telegram")["enable_inline_mode"]:
             self.bot.add_handler(InlineQueryHandler(self.inline_query))
             self.bot.add_handler(ChosenInlineResultHandler(self.inline_query_result_chosen))
 

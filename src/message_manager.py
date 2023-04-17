@@ -53,7 +53,7 @@ class MessageManager:
     def get_generated_image_url(self, user, prompt, num=1):
         LoggingManager.debug("Get generated image for user: %s" % user, "MessageManager")
 
-        if user in ConfigLoader.get("super_users"):
+        if user in ConfigLoader.get("user_management")["super_users"]:
             url, _ = self.openai_parser.image_generation(user, prompt)
             return (url, "Hey boss, it's on your account. 💰")
 

@@ -94,7 +94,7 @@ class AccessManager:
         # with open("config.json") as f:
         #     config_dict = json.load(f)
 
-        if ConfigLoader.get("allow_all_users") or (userid in ConfigLoader.get("allowed_users")):
+        if ConfigLoader.get("user_management")["allow_all_users"] or (userid in ConfigLoader.get("user_management")["allowed_users"]):
             LoggingManager.debug("User %s is allowed to chat with this bot." % userid, "AccessManager")
             return (True, "")
         else:
@@ -107,7 +107,7 @@ class AccessManager:
         # with open("config.json") as f:
         #     config_dict = json.load(f)
 
-        if userid in ConfigLoader.get("allowed_users"):
+        if userid in ConfigLoader.get("user_management")["allowed_users"]:
             # logging in __check_image_generation_limit()
             return self.__check_image_generation_limit(userid, num)
         else:
@@ -117,14 +117,14 @@ class AccessManager:
     def __check_image_generation_limit(self, userid, num):
         used_num = self.__get_image_generation_usage(userid)
 
-        if num + used_num > ConfigLoader.get("image_generation_limit_per_day"):
-            LoggingManager.debug("User %s is allowed to generate images, but has reached the limit (%s/%s)." % (userid, used_num, ConfigLoader.get("image_generation_limit_per_day")), "AccessManager")
+        if num + used_num > ConfigLoader.get("image_generation")["limit_per_day"]:
+            LoggingManager.debug("User %s is allowed to generate images, but has reached the limit (%s/%s)." % (userid, used_num, ConfigLoader.get("image_generation")["limit_per_day"]), "AccessManager")
             return (False, "Sorry. You have generated " + str(used_num) + " pictures today and the limit is "
-                    + str(ConfigLoader.get("image_generation_limit_per_day")) + " per day.")
+                    + str(ConfigLoader.get("image_generation")["limit_per_day"]) + " per day.")
         else:
-            LoggingManager.debug("User %s is allowed to generate images (%s/%s)." % (userid, used_num + num, ConfigLoader.get("image_generation_limit_per_day")), "AccessManager")
+            LoggingManager.debug("User %s is allowed to generate images (%s/%s)." % (userid, used_num + num, ConfigLoader.get("image_generation")["limit_per_day"]), "AccessManager")
             return (True, "You have used " + str(used_num + num) + " / " +
-                    str(ConfigLoader.get("image_generation_limit_per_day")) +
+                    str(ConfigLoader.get("image_generation")["limit_per_day"]) +
                     " times.")
 
 

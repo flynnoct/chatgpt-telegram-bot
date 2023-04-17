@@ -1,21 +1,44 @@
-{ 
-    "openai_api_key": "<YOUR_OPENAI_API_KEY_HERE>",
-    "telegram_bot_token": "<YOUR_TELEGRAM_BOT_TOKEN_HERE>",
-    "allow_all_users": false,
-    "allowed_users": [ 
-        "<USER_ID_1>", 
-        "<USER_ID_2>"
-    ], 
-    "enable_voice": true,   
-    "wait_time": 600,   
-    "enable_dalle": true,   
-    "super_users": [ 
-        "<SUPER_USER_ID_1>",    
-        "<SUPER_USER_ID_2>"
-    ], 
-    "image_generation_limit_per_day": 5,     
-    "enable_inline": false,
-    "openai_timeout": 60,
-    "enable_custom_system_role": true,
-    "system_role": "You are a helpful assistant"
+{
+    "telegram": {
+        "bot_token": "<YOUR_TELEGRAM_BOT_TOKEN_HERE>",
+        "enable_inline_mode": "true",
+        "context_expiration_time": 600
+    },
+    "openai": {
+        "api_key": "<YOUR_OPENAI_API_KEY_HERE>",
+        "chat_model": "gpt-3.5-turbo",
+        "enable_custom_system_role": "true",
+        "default_system_role": "You are a helpful assistant",
+        "api_timeout": 30
+    },
+    "user_management": {
+        "allow_all_users": "false",
+        "allowed_users": [
+            "<USER_ID_1>", 
+            "<USER_ID_2>"
+        ],
+        "super_users": [
+            "<SUPER_USER_ID_1>",
+            "<SUPER_USER_ID_2>"
+        ]
+    },
+    "image_generation": {
+        "enable_dalle": "true",
+        "limit_per_day": 5
+    },
+    "voice_message": {
+        "enable_voice": "true",
+        "tts_reply": "true",
+        "text_as_caption": "true"
+    },
+    "azure_tts": {
+        "subscription_key": "<YOUR_AZURE_TTS_SUBSCRIPTION_KEY_HERE>",
+        "subscription_region": "<YOUR_AZURE_TTS_SUBSCRIPTION_REGION_HERE>"
+    },
+    "logging": {
+        "log_level": "INFO",
+        "log_format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        "log_path": "./log/",
+        "log_file_with_time": false
+    }
 }
