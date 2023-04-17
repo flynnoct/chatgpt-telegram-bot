@@ -1,5 +1,12 @@
 # Version history
 
+## v1.3.0
+
+- System role customization is now supported.
+- Update the config file from command line is now supported.
+- Logging system is now completed for debug purposes.
+- Some bugs are fixed.
+
 ## v1.2.2
 
 - Some bugs in ACM and MSM are fixed.

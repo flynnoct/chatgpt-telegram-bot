@@ -14,5 +14,8 @@
         "<SUPER_USER_ID_2>"
     ], 
     "image_generation_limit_per_day": 5,     
-    "enable_inline": false
+    "enable_inline": false,
+    "openai_timeout": 60,
+    "enable_custom_system_role": true,
+    "system_role": "You are a helpful assistant"
 }

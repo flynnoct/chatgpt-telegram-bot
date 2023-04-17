@@ -15,28 +15,41 @@ __status__ = Dev
 from telegram import Update, InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, InlineQueryHandler, ChosenInlineResultHandler, ContextTypes, filters
 import json, os
+import logging
 from uuid import uuid4
 from message_manager import MessageManager
 from access_manager import AccessManager
+from config_loader import ConfigLoader
 
-with open("config.json") as f:
-    config_dict = json.load(f)
-if config_dict["enable_voice"]:
+# with open("config.json") as f:
+#     config_dict = json.load(f)
+if ConfigLoader.get("enable_voice"):
     import subprocess
 
 
 class TelegramMessageParser:
 
-    config_dict = {}
+    # config_dict = {}
 
     def __init__(self):
 
+        print("Bot is running, press Ctrl+C to stop...\nRecording log to ./bot.log")
+
         # load config
-        with open("config.json") as f:
-            self.config_dict = json.load(f)
+        # with open("config.json") as f:
+        #     self.config_dict = json.load(f)
+
+        # init logging, TODO integrate with config module
+        logging.basicConfig(
+            format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            filename = "./bot.log",
+            level = "INFO"
+            )
+
+        self.logger = logging.getLogger("TelegramMessageParser")
 
         # init bot
-        self.bot = ApplicationBuilder().token(self.config_dict["telegram_bot_token"]).build()
+        self.bot = ApplicationBuilder().token(ConfigLoader.get("telegram_bot_token")).concurrent_updates(True).build()
         # add handlers
         self.add_handlers()
 
@@ -47,6 +60,7 @@ class TelegramMessageParser:
         self.message_manager = MessageManager(self.access_manager)
 
     def run_polling(self):
+        self.logger.info("Starting polling, the bot is now running...")
         self.bot.run_polling()
 
     def add_handlers(self):
@@ -56,14 +70,16 @@ class TelegramMessageParser:
         self.bot.add_handler(CommandHandler("getid", self.get_user_id))
 
         # special message handlers
-        if self.config_dict["enable_voice"]:
+        if ConfigLoader.get("enable_voice"):
             self.bot.add_handler(MessageHandler(filters.VOICE, self.chat_voice))
-        if self.config_dict["enable_dalle"]:
+        if ConfigLoader.get("enable_dalle"):
             self.bot.add_handler(CommandHandler("dalle", self.image_generation))
+        if ConfigLoader.get("enable_custom_system_role"):
+            self.bot.add_handler(CommandHandler("role", self.set_system_role))
         self.bot.add_handler(MessageHandler(filters.PHOTO | filters.AUDIO | filters.VIDEO, self.chat_file))
 
         # inline query handler
-        if self.config_dict["enable_inline"]:
+        if ConfigLoader.get("enable_inline"):
             self.bot.add_handler(InlineQueryHandler(self.inline_query))
             self.bot.add_handler(ChosenInlineResultHandler(self.inline_query_result_chosen))
 
@@ -78,8 +94,7 @@ class TelegramMessageParser:
 
     # normal chat messages
     async def chat_text(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-
-
+        self.logger.info("Get a chat message from user: %s" % str(update.effective_user.id))
         # if group chat
         if update.effective_chat.type == "group" or update.effective_chat.type == "supergroup":
             return
@@ -110,12 +125,14 @@ class TelegramMessageParser:
             )
         # reply response to user
         # await update.message.reply_text(self.escape_str(response), parse_mode='MarkdownV2')
+        self.logger.debug("Sending response to user: %s" % str(update.effective_user.id))
         await update.message.reply_text(response)
 
     # command chat messages
     async def chat_text_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.logger.info("Get a chat message (triggered by command) from user: %s" % str(update.effective_user.id))
         # get message
-        message = update.effective_message.text
+        message = " ".join(context.args)
 
         # sending typing action
         await context.bot.send_chat_action(
@@ -140,10 +157,12 @@ class TelegramMessageParser:
             )
 
         # reply response to user
+        self.logger.debug("Sending response to user: %s" % str(update.effective_user.id))
         await update.message.reply_text(response)
 
     # voice message in private chat, speech to text with Whisper API and process with ChatGPT
     async def chat_voice(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.logger.info("Get a voice message from user: %s" % str(update.effective_user.id))
         # check if it's a private chat
         if not update.effective_chat.type == "private":
             return
@@ -165,6 +184,7 @@ class TelegramMessageParser:
         )
 
         try:
+            self.logger.debug("Downloading voice message from user: %s" % str(update.effective_user.id))
             file_id = update.effective_message.voice.file_id
             new_file = await context.bot.get_file(file_id)
             await new_file.download_to_drive(file_id + ".ogg")
@@ -175,6 +195,7 @@ class TelegramMessageParser:
             #     await update.message.reply_text("Sorry, the voice message is too long.")
             #     return
 
+            self.logger.debug("Converting voice message from user: %s" % str(update.effective_user.id))
             subprocess.call(
                 ['ffmpeg', '-i', file_id + '.ogg', file_id + '.wav'],
                 stdout=subprocess.DEVNULL, 
@@ -190,20 +211,25 @@ class TelegramMessageParser:
             os.remove(file_id + ".wav")
 
         except Exception as e:
+            self.logger.error("Error when processing voice message from user: %s" % str(update.effective_user.id))
             await update.message.reply_text("Sorry, something went wrong. Please try again later.")
             return
 
+        # send message to openai
         response = self.message_manager.get_response(
             str(update.effective_chat.id), 
             str(update.effective_user.id), 
             transcript
             )
+        self.logger.debug("Sending response to user: %s" % str(update.effective_user.id))
         await update.message.reply_text("\"" + transcript + "\"\n\n" + response)
 
     # image_generation command, aka DALLE
     async def image_generation(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.logger.info("Get an image generation command from user: %s" % str(update.effective_user.id))
         # remove dalle command from message
-        message = update.effective_message.text.replace("/dalle", "")
+        # message = update.effective_message.text.replace("/dalle", "")
+        message = " ".join(context.args)
 
         # send prompt to openai image generation and get image url
         image_url, prompt = self.message_manager.get_generated_image_url(
@@ -213,6 +239,7 @@ class TelegramMessageParser:
 
         # if exceeds use limit, send message instead
         if image_url is None:
+            self.logger.debug("The image generation request from user %s cannot be processed due to %s." % (str(update.effective_user.id), prompt))
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=prompt
@@ -224,6 +251,7 @@ class TelegramMessageParser:
                 action="upload_document"
             )
             # send file to user
+            self.logger.debug("Sending generated image to user: %s" % str(update.effective_user.id))
             await context.bot.send_document(
                 chat_id=update.effective_chat.id,
                 document=image_url,
@@ -232,6 +260,7 @@ class TelegramMessageParser:
 
     # inline text messages
     async def inline_query(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.logger.info("Get a inline query from user: %s" % str(update.effective_user.id))
         # get query message
         query = update.inline_query.query   
 
@@ -265,9 +294,11 @@ class TelegramMessageParser:
             ]
 
         # await update.inline_query.answer(results, cache_time=0, is_personal=True, switch_pm_text="Chat Privately 🤫", switch_pm_parameter="start")
+        self.logger.debug("Sending inline query back to user: %s" % str(update.effective_user.id))
         await update.inline_query.answer(results, cache_time=0, is_personal=True)
     
     async def inline_query_result_chosen(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.logger.info("Get a inline query result chosen from user %s with message ID %s" % (str(update.effective_user.id), update.chosen_inline_result.inline_message_id))
         # invalid user won't get a response
         try:
             # get userid and resultid
@@ -287,6 +318,7 @@ class TelegramMessageParser:
             response = "\"" + query + "\"\n\n" + self.message_manager.get_response(str(result_id), str(user_id), query)
 
             # edit message
+            self.logger.debug("Editing inline query result message %s from user %s" % (inline_message_id, str(update.effective_user.id)))
             await context.bot.edit_message_text(
                 response,
                 inline_message_id = inline_message_id,
@@ -328,6 +360,7 @@ class TelegramMessageParser:
 
     # start command
     async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.logger.info("Get a start command from user: %s" % str(update.effective_user.id))
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text="Hello, I'm a ChatGPT bot."
@@ -335,6 +368,7 @@ class TelegramMessageParser:
 
     # clear context command
     async def clear_context(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.logger.info("Get a clear context command from user: %s" % str(update.effective_user.id))
         allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
         if not allowed:
             await context.bot.send_message(
@@ -343,6 +377,7 @@ class TelegramMessageParser:
             )
             return
         self.message_manager.clear_context(str(update.effective_chat.id))
+        self.logger.debug("Context cleared for user: %s" % str(update.effective_user.id))
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text="Context cleared."
@@ -350,13 +385,29 @@ class TelegramMessageParser:
 
     # get user id command
     async def get_user_id(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.logger.info("Get a get user ID command from user: %s, username: %s, first_name: %s, last_name: %s" % (str(update.effective_user.id), update.effective_user.username, update.effective_user.first_name, update.effective_user.last_name))
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text=str(update.effective_user.id)
         )
 
+    # set system role command
+    async def set_system_role(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        arg_str = " ".join(context.args)
+        self.logger.info("Set system role to %s from user: %s" % (arg_str, str(update.effective_user.id)))
+        allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
+        if not allowed:
+            await context.bot.send_message(
+                chat_id = update.effective_chat.id,
+                text = "Sorry, you are not allowed to use this bot."
+            )
+            return
+        reply_message = self.message_manager.set_system_role(str(update.effective_chat.id), str(update.effective_user.id), arg_str)
+        await update.message.reply_text(reply_message)
+
     # unknown command
     async def unknown(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.logger.info("Get an unknown command from user: %s" % str(update.effective_user.id))
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text="Sorry, I didn't understand that command."
