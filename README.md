@@ -107,7 +107,7 @@ bash ./bin/restart_bot.sh # restart the bot
 bash ./bin/stop_bot.sh # stop the bot
 ```
 
-## For developers
+## 👷 For developers
 
 Documentation is provided under [docs](./docs) for developers who wants to customize the Bot.
 
