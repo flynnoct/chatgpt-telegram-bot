@@ -65,8 +65,6 @@ In a group chat, use the `/chat` to invoke the Bot. It will not collect any othe
 4. A practical Internet environment is required.
 5. (Optional) [FFmpeg](https://ffmpeg.org) is required for the Bot to handle voice messages with Whisper. If you are not interested in using voice messages, you don't need to install it and **must set `enable_voice` in the config file to False**.
 
-> **Note**: You should disable the privacy mode of the bot. Otherwise the bot will not receive the messages from the group chat. You can do this by sending `/setprivacy` to [@BotFather](https://t.me/BotFather).
-
 ### Installation
 
 1. Git clone from main branch or download the latest release [Source code](https://github.com/flynnoct/chatgpt-telegram-bot/releases/latest) file and install the dependencies.
@@ -80,6 +78,8 @@ pip install -r requirements.txt
 2. Create a config file to manage the Bot.
 
 The config file includes sensitive information, such as telegram_token and openai_api_key, and we only release the corresponding template `config.json.template`. Therefore, you need to create a new `config.json` file by replacing the relative fields in the template with your own. Then, you can use the `config.py` script to udpate the config file through command line.
+
+**Recommended:** You should keep `config.json.template` unmodified because the bot needs to read default configuration values from it. For backward compatibility, it is highly recommended to check the template for newly added parameters when you update to a new version.
 
 ```bash
 cp config.json.template config.json

@@ -1,5 +1,11 @@
 # Version history
 
+## v1.3.1
+
+For backward compatibility, we add default parameter values to the `config.json.template` for newly added parameters.
+
+Check issue [#78](https://github.com/flynnoct/chatgpt-telegram-bot/issues/78) for more information.
+
 ## v1.3.0
 
 - System role customization is now supported.
