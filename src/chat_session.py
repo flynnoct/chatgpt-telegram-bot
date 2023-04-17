@@ -1,6 +1,7 @@
 import copy
 import logging
 from config_loader import ConfigLoader
+from logging_manager import LoggingManager
 
 class ChatSession:
     
@@ -8,8 +9,6 @@ class ChatSession:
     # __messageList = []
     
     def __init__(self, contactTime, message):
-        # setup logger
-        self.logger = logging.getLogger("ChatSession")
         # first message
         self.__messageList = []
         self.__system_role = ConfigLoader.get('system_role')
@@ -33,7 +32,7 @@ class ChatSession:
         # check time
         if (source == "user") and (contactTime - self.__latestTime > ConfigLoader.get("wait_time")) :
             # refresh message list
-            self.logger.info("Context expired, clear context.")
+            LoggingManager.info("Context expired, clear context.", "ChatSession")
             self.__messageList.clear()
             self.__system_role = ConfigLoader.get('system_role')
         self.__latestTime = contactTime

@@ -6,6 +6,7 @@ from access_manager import AccessManager
 from chat_session import ChatSession
 from openai_parser import OpenAIParser
 from config_loader import ConfigLoader
+from logging_manager import LoggingManager
 
 
 class MessageManager:
@@ -18,13 +19,11 @@ class MessageManager:
     def __init__(self, access_manager):
         self.openai_parser = OpenAIParser()
         self.access_manager = access_manager
-        # setup logger
-        self.logger = logging.getLogger("MessageManager")
-        
+
         self.access_manager = AccessManager()
 
     def get_response(self, id, user, message):
-        self.logger.debug("Get response for user: %s" % id)
+        LoggingManager.debug("Get response for user: %s" % id, "MessageManager")
         t = time.time()
 
         # (permission, clue) = self.access_manager.check_user_allowed(user)
@@ -45,14 +44,14 @@ class MessageManager:
         return answer
 
     def clear_context(self, id):
-        self.logger.debug("Clear context for user: %s" % id)
+        LoggingManager.debug("Clear context for user: %s" % id, "MessageManager")
         try:
             self.userDict[id].clear_context(time.time())
         except Exception as e:
             print(e)
 
     def get_generated_image_url(self, user, prompt, num=1):
-        self.logger.debug("Get generated image for user: %s" % user)
+        LoggingManager.debug("Get generated image for user: %s" % user, "MessageManager")
 
         if user in ConfigLoader.get("super_users"):
             url, _ = self.openai_parser.image_generation(user, prompt)
@@ -68,7 +67,7 @@ class MessageManager:
         return url, clue
 
     def get_transcript(self, user, audio_file):
-        self.logger.debug("Get voice transcript for user: %s" % user)
+        LoggingManager.debug("Get voice transcript for user: %s" % user, "MessageManager")
         # (permission, clue) = self.access_manager.check_user_allowed(user)
         # if permission == False:
         #     return clue
@@ -76,7 +75,7 @@ class MessageManager:
         return self.openai_parser.speech_to_text(user, audio_file)
     
     def set_system_role(self, id, user, message):
-        self.logger.debug("Set system role for chat: %s" % id)
+        LoggingManager.debug("Set system role for chat: %s" % id, "MessageManager")
         t = time.time()
         if id not in self.userDict:
             self.userDict[id] = ChatSession(t, message)       

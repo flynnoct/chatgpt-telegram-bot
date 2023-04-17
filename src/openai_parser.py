@@ -17,14 +17,13 @@ import datetime
 import logging
 import signal
 from config_loader import ConfigLoader
+from logging_manager import LoggingManager
 
 class OpenAIParser:
 
     # config_dict = {}
 
     def __init__(self):
-        # setup logger
-        self.logger = logging.getLogger("OpenAIParser")
 
         # load config
         # with open("config.json") as f:
@@ -42,7 +41,7 @@ class OpenAIParser:
         return response["choices"][0]["message"]["content"]
     
     def get_response(self, userid, context_messages):
-        self.logger.debug("Get OpenAI GPT response for user: %s" % userid)
+        LoggingManager.debug("Get OpenAI GPT response for user: %s" % userid, "OpenAIParser")
         # context_messages.insert(0, {"role": "system", "content": "You are a helpful assistant"})
         try:
 
@@ -59,21 +58,21 @@ class OpenAIParser:
             signal.alarm(0)
             return (response["choices"][0]["message"]["content"], response["usage"]["total_tokens"])
         except Exception as e:
-            self.logger.error("OpenAI GPT request for user %s with error: %s" % (userid, str(e)))
+            LoggingManager.error("OpenAI GPT request for user %s with error: %s" % (userid, str(e)), "OpenAIParser")
             return ("Oops, something went wrong with OpenAI. Please try again later.", 0)
 
     def speech_to_text(self, userid, audio_file):
-        self.logger.debug("Get OpenAI Speech to Text for user: %s" % userid)
+        LoggingManager.debug("Get OpenAI Speech to Text for user: %s" % userid, "OpenAIParser")
         # transcript = openai.Audio.transcribe("whisper-1", audio_file, language="zh")
         try:
             transcript = openai.Audio.transcribe("whisper-1", audio_file)
         except Exception as e:
-            self.logger.error("OpenAI Speech to Text request for user %s with error: %s" % (userid, str(e)))
+            LoggingManager.error("OpenAI Speech to Text request for user %s with error: %s" % (userid, str(e)), "OpenAIParser")
             return ""
         return transcript["text"]
 
     def image_generation(self, userid, prompt):
-        self.logger.debug("Get OpenAI Image Generation for user: %s" % userid)
+        LoggingManager.debug("Get OpenAI Image Generation for user: %s" % userid, "OpenAIParser")
         response = openai.Image.create(prompt = prompt, n=1, size = "512x512", user = userid)
         image_url = response["data"][0]["url"]
         # for debug use
