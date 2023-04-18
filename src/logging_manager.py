@@ -6,10 +6,10 @@ from config_loader import ConfigLoader
 # static class
 class LoggingManager:
 
-    _log_level = ConfigLoader.get("logging")['log_level']
-    _log_path = ConfigLoader.get("logging")['log_path']
-    _log_format = ConfigLoader.get("logging")['log_format']
-    _log_time = datetime.now().strftime('-%Y%m%d-%H%M') if ConfigLoader.get("logging")['log_file_with_time'] else ''
+    _log_level = ConfigLoader.get("logging", "log_level")
+    _log_path = ConfigLoader.get("logging", "log_path")
+    _log_format = ConfigLoader.get("logging", "log_format")
+    _log_time = datetime.now().strftime('-%Y%m%d-%H%M') if ConfigLoader.get("logging", "log_file_with_time") else ''
 
     # check if log path exists, if not create it
     if not os.path.exists(_log_path):

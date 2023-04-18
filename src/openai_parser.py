@@ -30,10 +30,10 @@ class OpenAIParser:
         #     self.config_dict = json.load(f)
         # init openai
         # openai.organization = self.config_dict["ORGANIZATION"] if "ORGANIZATION" in self.config_dict else "Personal"
-        openai.api_key = ConfigLoader.get("openai")["api_key"]
+        openai.api_key = ConfigLoader.get("openai", "api_key")
 
     def _get_single_response(self, message):
-        response = openai.ChatCompletion.create(model = ConfigLoader.get("openai")["chat_model"],
+        response = openai.ChatCompletion.create(model = ConfigLoader.get("openai", "chat_model"),
                                                 messages = [
                                                     {"role": "system", "content": "You are a helpful assistant"},
                                                     {"role": "user", "content": message}
@@ -49,10 +49,10 @@ class OpenAIParser:
             def timeout_handler(signum, frame):
                 raise Exception("Timeout")
             signal.signal(signal.SIGALRM, timeout_handler)
-            signal.alarm(int(ConfigLoader.get("openai")["api_timeout"]))
+            signal.alarm(int(ConfigLoader.get("openai", "api_timeout")))
             #### Timer ####
             response = openai.ChatCompletion.create(
-                model = ConfigLoader.get("openai")["chat_model"],
+                model = ConfigLoader.get("openai", "chat_model"),
                 messages = context_messages
                 )
             ###############

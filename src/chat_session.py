@@ -11,7 +11,7 @@ class ChatSession:
     def __init__(self, contactTime, message):
         # first message
         self.__messageList = []
-        self.__system_role = ConfigLoader.get("openai")["default_system_role"]
+        self.__system_role = ConfigLoader.get("openai", "default_system_role")
         self.__latestTime = contactTime
         self.__messageList.append(
             {"role": "user", "content": message}
@@ -30,11 +30,11 @@ class ChatSession:
     
     def update(self, contactTime, message, source):
         # check time
-        if (source == "user") and (contactTime - self.__latestTime > ConfigLoader.get("telegram")["context_expiration_time"]) :
+        if (source == "user") and (contactTime - self.__latestTime > ConfigLoader.get("telegram", "context_expiration_time")) :
             # refresh message list
             LoggingManager.info("Context expired, clear context.", "ChatSession")
             self.__messageList.clear()
-            self.__system_role = ConfigLoader.get("openai")["default_system_role"]
+            self.__system_role = ConfigLoader.get("openai", "default_system_role")
         self.__latestTime = contactTime
         self.__messageList.append(
             {"role": source, "content": message}
@@ -50,7 +50,7 @@ class ChatSession:
     def clear_context(self, clear_time):
         self.__latestTime = clear_time
         self.__messageList.clear()
-        self.__system_role = ConfigLoader.get("openai")["default_system_role"]
+        self.__system_role = ConfigLoader.get("openai", "default_system_role")
         
 if __name__ == "__main__":
     chatA = ChatSession(1, "a")

@@ -2,13 +2,14 @@
 import json
 import os.path
 import time
+from functools import reduce
 
 CONFIG_FILE = 'config.json'
 
 '''
 EXAMPLE:
-from config_loader import ConfigLoder
-allowed_users = ConfigLoader.get('allowed_users')
+from config_loader import ConfigLoader
+allowed_users = ConfigLoader.get("allowed_users")
 '''
 
 class ConfigLoader:
@@ -35,12 +36,15 @@ class ConfigLoader:
                 ConfigLoader._config_last_modified_time = os.path.getmtime(CONFIG_FILE)
 
     @staticmethod
-    def get(key):
+    def get(*keys):
         ConfigLoader.load_config()
-        # If the key is not in the config file, return the default value
-        if key not in ConfigLoader._config:
+        try:
+            result = reduce(lambda d, key: d[key], keys, ConfigLoader._config)
+        except KeyError:
             with open("config.json.template", "r") as f:
                 config_dict_template = json.load(f)
-                return config_dict_template[key]
-        return ConfigLoader._config[key]
+            result = reduce(lambda d, key: d[key], keys, config_dict_template)
+        return result
 
+if __name__ == '__main__':
+    print(ConfigLoader.get("openai", "api_key"))

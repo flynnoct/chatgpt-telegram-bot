@@ -31,14 +31,14 @@ class TelegramMessageParser:
 
     def __init__(self):
 
-        print("Bot is running, press Ctrl+C to stop...\nRecording log to %s" % ConfigLoader.get("logging")['log_path'])
+        print("Bot is running, press Ctrl+C to stop...\nRecording log to %s" % ConfigLoader.get("logging", "log_path"))
 
         # load config
         # with open("config.json") as f:
         #     self.config_dict = json.load(f)
 
         # init bot
-        self.bot = ApplicationBuilder().token(ConfigLoader.get("telegram")["bot_token"]).concurrent_updates(True).build()
+        self.bot = ApplicationBuilder().token(ConfigLoader.get("telegram", "bot_token")).concurrent_updates(True).build()
         # add handlers
         self.add_handlers()
 
@@ -62,16 +62,16 @@ class TelegramMessageParser:
         self.bot.add_handler(CommandHandler("getid", self.get_user_id))
 
         # special message handlers
-        if ConfigLoader.get("voice_message")["enable_voice"]:
+        if ConfigLoader.get("voice_message", "enable_voice"):
             self.bot.add_handler(MessageHandler(filters.VOICE, self.chat_voice))
-        if ConfigLoader.get("image_generation")["enable_dalle"]:
+        if ConfigLoader.get("image_generation", "enable_dalle"):
             self.bot.add_handler(CommandHandler("dalle", self.image_generation))
-        if ConfigLoader.get("openai")["enable_custom_system_role"]:
+        if ConfigLoader.get("openai", "enable_custom_system_role"):
             self.bot.add_handler(CommandHandler("role", self.set_system_role))
         self.bot.add_handler(MessageHandler(filters.PHOTO | filters.AUDIO | filters.VIDEO, self.chat_file))
 
         # inline query handler
-        if ConfigLoader.get("telegram")["enable_inline_mode"]:
+        if ConfigLoader.get("telegram", "enable_inline_mode"):
             self.bot.add_handler(InlineQueryHandler(self.inline_query))
             self.bot.add_handler(ChosenInlineResultHandler(self.inline_query_result_chosen))
 
@@ -221,17 +221,25 @@ class TelegramMessageParser:
         # TODO
         file_id = str(update.effective_user.id) + "_" + str(uuid4())
         self.azure_parser.text_to_speech(response, file_id)
-
-
-        await context.bot.send_voice(
-            chat_id = update.effective_chat.id,
-            voice = open(file_id + ".wav", 'rb'),
-            caption = "\"" + transcript + "\"\n\n" + response,
-            reply_to_message_id = update.effective_message.message_id,
-            allow_sending_without_reply = True
+        try:
+            await context.bot.send_voice(
+                chat_id = update.effective_chat.id,
+                voice = open(file_id + ".wav", 'rb'),
+                caption = "\"" + transcript + "\"\n\n" + response,
+                reply_to_message_id = update.effective_message.message_id,
+                allow_sending_without_reply = True
+                )
+        except Exception as e:
+            await context.bot.send_message(
+                chat_id = update.effective_chat.id,
+                text = "😢 Sorry, something went wrong with Azure TTS Service, contact administrator for more details." + "\n\n\"" + transcript + "\"\n\n" + response,
+                reply_to_message_id = update.effective_message.message_id,
+                allow_sending_without_reply = True
             )
-        
-        os.remove(file_id + ".wav")
+        try:
+            os.remove(file_id + ".wav")
+        except:
+            pass
 
     # image_generation command, aka DALLE
     async def image_generation(self, update: Update, context: ContextTypes.DEFAULT_TYPE):

@@ -33,6 +33,8 @@
         "text_as_caption": "true"
     },
     "azure_tts": {
+        "language": "en-US",
+        "voice": "en-US-AmberNeural",
         "subscription_key": "<YOUR_AZURE_TTS_SUBSCRIPTION_KEY_HERE>",
         "subscription_region": "<YOUR_AZURE_TTS_SUBSCRIPTION_REGION_HERE>"
     },
