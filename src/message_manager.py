@@ -22,7 +22,7 @@ class MessageManager:
         self.userDict = {}
         # self.access_manager = AccessManager()
 
-    def get_response(self, id, user, message, voice = False):
+    def get_response(self, id, user, message, is_voice = False):
         LoggingManager.debug("Get response for user: %s" % id, "MessageManager")
         t = time.time()
 
@@ -32,14 +32,14 @@ class MessageManager:
         else:
             self.userDict[id].update(t, message, "user")
             
-        if voice == True:
+        if is_voice == True:
             self.userDict[id].set_voice()
         
         # send user info for statistics
         (answer, usage) = self.__sendMessage(
             user, self.userDict[id].messageList)
         
-        if voice == True:
+        if is_voice == True:
             self.userDict[id].unset_voice()
         
         self.userDict[id].update(t, answer, "assistant")

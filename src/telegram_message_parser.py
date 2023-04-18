@@ -211,7 +211,8 @@ class TelegramMessageParser:
         response = self.message_manager.get_response(
             str(update.effective_chat.id), 
             str(update.effective_user.id), 
-            transcript
+            transcript,
+            is_voice = True
             )
         LoggingManager.debug("Sending response to user: %s" % str(update.effective_user.id), "TelegramMessageParser")
 

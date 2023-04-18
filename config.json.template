@@ -7,6 +7,7 @@
     "openai": {
         "api_key": "<YOUR_OPENAI_API_KEY_HERE>",
         "chat_model": "gpt-3.5-turbo",
+        "chat_temperature": 1.0,
         "enable_custom_system_role": "true",
         "default_system_role": "You are a helpful assistant",
         "api_timeout": 30
