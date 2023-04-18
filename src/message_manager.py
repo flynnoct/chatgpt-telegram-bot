@@ -11,34 +11,37 @@ from logging_manager import LoggingManager
 
 class MessageManager:
 
-    userDict = {}
+    # userDict = {}
     # config_dict = {}
-    openai_parser = None
-    access_manager = None
+    # openai_parser = None
+    # access_manager = None
     
     def __init__(self, access_manager):
         self.openai_parser = OpenAIParser()
         self.access_manager = access_manager
+        self.userDict = {}
+        # self.access_manager = AccessManager()
 
-        self.access_manager = AccessManager()
-
-    def get_response(self, id, user, message):
+    def get_response(self, id, user, message, voice = False):
         LoggingManager.debug("Get response for user: %s" % id, "MessageManager")
         t = time.time()
-
-        # (permission, clue) = self.access_manager.check_user_allowed(user)
-        # if permission == False:
-        #     return clue
 
         if id not in self.userDict:
             # new user
             self.userDict[id] = ChatSession(t, message)
         else:
             self.userDict[id].update(t, message, "user")
+            
+        if voice == True:
+            self.userDict[id].set_voice()
         
         # send user info for statistics
         (answer, usage) = self.__sendMessage(
             user, self.userDict[id].messageList)
+        
+        if voice == True:
+            self.userDict[id].unset_voice()
+        
         self.userDict[id].update(t, answer, "assistant")
         self.access_manager.update_usage_info(user, usage, "chat")
         return answer
@@ -68,9 +71,6 @@ class MessageManager:
 
     def get_transcript(self, user, audio_file):
         LoggingManager.debug("Get voice transcript for user: %s" % user, "MessageManager")
-        # (permission, clue) = self.access_manager.check_user_allowed(user)
-        # if permission == False:
-        #     return clue
 
         return self.openai_parser.speech_to_text(user, audio_file)
     

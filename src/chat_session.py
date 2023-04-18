@@ -40,6 +40,13 @@ class ChatSession:
             {"role": source, "content": message}
         )
         
+    def set_voice(self):
+        voiceSetStr = "Additionally, your response will be converted to speech, so please keep your response concise and use language that mimics human speech."
+        self.__system_role = self.__system_role + voiceSetStr
+        
+    def unset_voice(self):
+        self.__system_role = self.__system_role.replace("Additionally, your response will be converted to speech, so please keep your response concise and use language that mimics human speech.", "")     
+        
     def clear_context(self, clear_time):
         self.__latestTime = clear_time
         self.__messageList.clear()
