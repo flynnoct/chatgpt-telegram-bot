@@ -168,13 +168,6 @@ class TelegramMessageParser:
             )
             return
 
-
-        # sending typing action
-        await context.bot.send_chat_action(
-            chat_id=update.effective_chat.id,
-            action="typing"
-        )
-
         try:
             LoggingManager.debug("Downloading voice message from user: %s" % str(update.effective_user.id), "TelegramMessageParser")
             file_id = update.effective_message.voice.file_id
@@ -207,6 +200,16 @@ class TelegramMessageParser:
             await update.message.reply_text("Sorry, something went wrong. Please try again later.")
             return
 
+        # sending record_voice/typing action
+        if ConfigLoader.get("voice_message", "tts_reply"):
+            action = "record_voice"
+        else:
+            action = "typing"   
+        await context.bot.send_chat_action(
+            chat_id = update.effective_chat.id,
+            action = action
+        )
+
         # send message to openai
         response = self.message_manager.get_response(
             str(update.effective_chat.id), 
@@ -216,30 +219,39 @@ class TelegramMessageParser:
             )
         LoggingManager.debug("Sending response to user: %s" % str(update.effective_user.id), "TelegramMessageParser")
 
-        # await update.message.reply_text("\"" + transcript + "\"\n\n" + response)
-
-        # TODO
-        file_id = str(update.effective_user.id) + "_" + str(uuid4())
-        self.azure_parser.text_to_speech(response, file_id)
-        try:
-            await context.bot.send_voice(
-                chat_id = update.effective_chat.id,
-                voice = open(file_id + ".wav", 'rb'),
-                caption = "\"" + transcript + "\"\n\n" + response,
-                reply_to_message_id = update.effective_message.message_id,
-                allow_sending_without_reply = True
+        if ConfigLoader.get("voice_message", "tts_reply"): # send voice message
+            file_id = str(update.effective_user.id) + "_" + str(uuid4())
+            self.azure_parser.text_to_speech(response, file_id)
+            try:
+                if ConfigLoader.get("voice_message", "text_as_caption"):
+                    caption = "\"" + transcript + "\"\n\n" + response
+                else:
+                    caption = ""
+                await context.bot.send_voice(
+                    chat_id = update.effective_chat.id,
+                    voice = open(file_id + ".wav", 'rb'),
+                    caption = caption,
+                    reply_to_message_id = update.effective_message.message_id,
+                    allow_sending_without_reply = True
+                    )
+            except Exception as e: # if error, send text reply
+                await context.bot.send_message(
+                    chat_id = update.effective_chat.id,
+                    text = "😢 Sorry, something went wrong with Azure TTS Service, contact administrator for more details." + "\n\n\"" + transcript + "\"\n\n" + response,
+                    reply_to_message_id = update.effective_message.message_id,
+                    allow_sending_without_reply = True
                 )
-        except Exception as e:
+            try:
+                os.remove(file_id + ".wav")
+            except:
+                pass
+        else: # send text reply
             await context.bot.send_message(
                 chat_id = update.effective_chat.id,
-                text = "😢 Sorry, something went wrong with Azure TTS Service, contact administrator for more details." + "\n\n\"" + transcript + "\"\n\n" + response,
+                text = "\"" + transcript + "\"\n\n" + response,
                 reply_to_message_id = update.effective_message.message_id,
                 allow_sending_without_reply = True
             )
-        try:
-            os.remove(file_id + ".wav")
-        except:
-            pass
 
     # image_generation command, aka DALLE
     async def image_generation(self, update: Update, context: ContextTypes.DEFAULT_TYPE):

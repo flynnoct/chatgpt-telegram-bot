@@ -47,4 +47,4 @@ class ConfigLoader:
         return result
 
 if __name__ == '__main__':
-    print(ConfigLoader.get("openai", "api_key"))
+    print(ConfigLoader.get("voice_message", "tts_reply"))
