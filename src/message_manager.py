@@ -90,6 +90,7 @@ class MessageManager:
         
 
     def __sendMessage(self, user, messageList):
+        print(messageList)
         ans = self.openai_parser.get_response(user, messageList)
         return ans
     
