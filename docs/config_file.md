@@ -1,6 +1,8 @@
-# Documentation for config.json
+# Configuration File
 
-This documentation is for users who are unfamilar with JSON file and have trouble in using the `config.json` file.
+This document is intended to assist administrators in deploying and configuring this bot correctly, and covers the meanings of all the items that appear in the `config.json` file, which is in JSON file format and located in the root of this project's workspace. 
+
+> Note: It is important to pay attention to the use of quotation marks in JSON files, as they may introduce type issues and potential errors.
 
 ## Usage
 
@@ -13,7 +15,7 @@ Follow below procedures to modify your `config.json`:
 
 3. Customize the rest config keys for your own need, or just use the default values.
 
-```
+```json
 {
     <!-- The Telegram config list. -->
     "telegram": {
@@ -109,6 +111,8 @@ Follow below procedures to modify your `config.json`:
         "log_file_with_time": false
     }
 }
+
+```
 
 
 

@@ -2,12 +2,17 @@
 
 ![](/docs/dialog.png)
 
+## 💥 Read This Before Updating to v1.4
+
+We adjusted configuration format since v1.4.0, which is NOT compatible with previous versions. Please check the [config doc](./docs/config_file.md) for more details. You should backup your old config file and create a new one after updating to v1.4.0.
+
 ## 🎉 News
 
 - **Microsoft Azure TTS** is now supported! The Bot can now reply with voice messages!
-- **ChatGPT temperature** is now supported! The user can set the temperature to customize the creativity of ChatGPT reply.
+- **ChatGPT temperature** is now supported! You can set the temperature in configuration to customize the creativity of ChatGPT reply.
 - A better **logging system** is provided for debugging purposes.
-- A well-organized config template is provided. Developers should go through the [config doc](./docs/config_file.md) to complete the config file. We have temporarily removed the configuration script.
+- A better-organized config structure is provided. You should go through the [config doc](./docs/config_file.md) and modify the config file. We have temporarily removed the `config.py` configuration script.
+- Model selection ability is added. You can now choose the model you want to use in the config file. The bot can be powered by GPT-4 if you have access.
 
 ## 🐱 Introduction
 
@@ -27,14 +32,13 @@ The Telegram Bot features the following functions:
 - **DALL·E, the Image Generation AI Model**. Send a short prompt to the Bot and get your own painting.
 - **Whisper, the Intelligent Speech Recognizer**. The Bot can read your voice messages.
 - **Azure TTS, the Speech service feature that converts text to lifelike speech**. The Bot can reply with voice messages.
-- **Comprehensive privacy protection**. The Bot is unable (and of course we won't) to collect any message in group chat except user prompts.
+- **Comprehensive Privacy Protection**. The Bot is unable (and of course we won't) to collect any message in group chat except user prompts.
 
 Additonal features:
 
 - ChatGPT role and temperature Customization.
-- Logging system for debug purpose.
-- Telegram _inline mode_ is supported to invoke the Bot in a private chat with a contact and a group without bot as a member.
-- User Whitelist to control who can use the bot. You can also set `allow_all_users` to `true` to allow all users to use the Bot.
+- The Telegram _inline mode_ allows you to query the Bot privately in a chat with a contact or group, even if the bot is not a member.
+- User White-list to control who can use the bot. You can also set `allow_all_users` to `true` to allow any users to use the Bot.
 - Set the daily limitation of requirements to **DALL·E**.
 - Grant more resources to _Super Users_.
 - Docker deployment is supported. (This method is maintained by community. Thanks for @EstrellaXD 's contribution)
