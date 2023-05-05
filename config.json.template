@@ -1,19 +1,19 @@
 {
     "telegram": {
         "bot_token": "<YOUR_TELEGRAM_BOT_TOKEN_HERE>",
-        "enable_inline_mode": "true",
+        "enable_inline_mode": true,
         "context_expiration_time": 600
     },
     "openai": {
         "api_key": "<YOUR_OPENAI_API_KEY_HERE>",
         "chat_model": "gpt-3.5-turbo",
         "chat_temperature": 1.0,
-        "enable_custom_system_role": "true",
+        "enable_custom_system_role": true,
         "default_system_role": "You are a helpful assistant",
         "api_timeout": 30
     },
     "user_management": {
-        "allow_all_users": "false",
+        "allow_all_users": false,
         "allowed_users": [
             "<USER_ID_1>", 
             "<USER_ID_2>"
@@ -24,13 +24,13 @@
         ]
     },
     "image_generation": {
-        "enable_dalle": "true",
+        "enable_dalle": true,
         "limit_per_day": 5
     },
     "voice_message": {
-        "enable_voice": "true",
-        "tts_reply": "true",
-        "text_as_caption": "true"
+        "enable_voice": true,
+        "tts_reply": true,
+        "text_as_caption": true
     },
     "azure_tts": {
         "language": "en-US",
