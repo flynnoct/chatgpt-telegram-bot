@@ -136,10 +136,19 @@ class TelegramMessageParser:
                 text = response_message
             )
 
-        openai_p = OpenAIParser()
-        response = await openai_p.get_response_in_stream(
-            update.effective_user.id,
+        # openai_p = OpenAIParser()
+        # response = await openai_p.get_response_in_stream(
+        #     update.effective_user.id,
+        #     update.effective_chat.id,
+        #     update.effective_message.message_id,
+        #     message,
+        #     chat_text_first_chunk_callback,
+        #     chat_text_append_chunks_callback
+        # )
+        
+        await self.message_manager.get_response_in_stream(
             update.effective_chat.id,
+            update.effective_user.id,
             update.effective_message.message_id,
             message,
             chat_text_first_chunk_callback,
