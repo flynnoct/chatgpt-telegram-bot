@@ -24,7 +24,6 @@ from access_manager import AccessManager
 from config_loader import ConfigLoader
 from azure_parser import AzureParser
 
-
 class TelegramMessageParser:
 
     # config_dict = {}
