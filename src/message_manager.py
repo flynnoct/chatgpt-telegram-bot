@@ -16,8 +16,36 @@ class MessageManager:
         self.__openai_parser = OpenAIParser()
         self.__access_manager = access_manager
         self.__userDict = {}
+        
+    async def get_response_in_stream(self, chat_id, user_id, message_id, message, chat_text_first_chunk_callback, chat_text_append_chunks_callback, is_voice = False):
+        LoggingManager.debug("Get response for user in stream mode: %s" % id, "MessageManager")
+        t = time.time()
+        str_id = str(chat_id)
+        str_user = str(user_id)
+        if str_id not in self.__userDict:
+            # new user
+            self.__userDict[str_id] = ChatSession(t)
 
-    async def get_response(self, chat_id, user_id, message_id, message, chat_text_first_chunk_callback, chat_text_append_chunks_callback, is_voice = False):
+        async with self.__userDict[str_id].lock:
+            self.__userDict[str_id].update(t, message, "user")
+                
+            if is_voice == True:
+                self.__userDict[str_id].set_voice()
+            
+            # send user info for statistics            
+
+            (answer, usage) = await self.__sendMessage_in_stream(
+                chat_id, user_id, message_id, self.__userDict[str_id].messageList, chat_text_first_chunk_callback, chat_text_append_chunks_callback)
+            
+            if is_voice == True:
+                self.__userDict[str_id].unset_voice()
+            
+            self.__userDict[str_id].update(t, answer, "assistant")
+            self.__access_manager.update_usage_info(str_user, usage, "chat")
+          
+        return answer
+
+    async def get_response(self, chat_id, user_id, message, is_voice = False):
         LoggingManager.debug("Get response for user: %s" % id, "MessageManager")
         t = time.time()
         str_id = str(chat_id)
@@ -35,7 +63,7 @@ class MessageManager:
             # send user info for statistics            
 
             (answer, usage) = await self.__sendMessage(
-                chat_id, user_id, message_id, self.__userDict[str_id].messageList, chat_text_first_chunk_callback, chat_text_append_chunks_callback)
+                user_id, self.__userDict[str_id].messageList)
             
             if is_voice == True:
                 self.__userDict[str_id].unset_voice()
@@ -73,7 +101,7 @@ class MessageManager:
 
         return self.__openai_parser.speech_to_text(user, audio_file)
     
-    async def set_system_role(self, chat_id, user_id, message_id, message, chat_text_first_chunk_callback, chat_text_append_chunks_callback):
+    async def set_system_role(self, chat_id, user_id, message):
         LoggingManager.debug("Set system role for chat: %s" % id, "MessageManager")
         t = time.time()
         str_id = str(chat_id)
@@ -85,17 +113,19 @@ class MessageManager:
             self.__userDict[str_id].set_system_role(t, message)   
             
             # send first sentence
-            (answer, usage) = await self.__sendMessage(chat_id, user_id, message_id, 
+            (answer, usage) = await self.__sendMessage(user_id 
                     [{"role": "system", "content": message}, 
-                    {"role": "user", "content":"Say hello to me."}],
-                    chat_text_first_chunk_callback, chat_text_append_chunks_callback)
+                    {"role": "user", "content":"Say hello to me."}])
             self.__access_manager.update_usage_info(str_user, usage, "chat")
 
         return answer
+    
+    async def __sendMessage(self, user, messageList):
+        ans = await self.__openai_parser.get_response(user, messageList)
+        return ans
         
-
-    async def __sendMessage(self, chat_id, user_id, message_id, messageList, chat_text_first_chunk_callback, chat_text_append_chunks_callback):
-        ans = await self.__openai_parser.get_response(chat_id, user_id, message_id, messageList, chat_text_first_chunk_callback, chat_text_append_chunks_callback)
+    async def __sendMessage_in_stream(self, chat_id, user_id, message_id, messageList, chat_text_first_chunk_callback, chat_text_append_chunks_callback):
+        ans = await self.__openai_parser.get_response_in_stream(chat_id, user_id, message_id, messageList, chat_text_first_chunk_callback, chat_text_append_chunks_callback)
         return ans
     
     
