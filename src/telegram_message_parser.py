@@ -24,7 +24,6 @@ from access_manager import AccessManager
 from config_loader import ConfigLoader
 from azure_parser import AzureParser
 
-from openai_parser import OpenAIParser
 
 class TelegramMessageParser:
 
@@ -136,10 +135,9 @@ class TelegramMessageParser:
                 text = response_message
             )
 
-        openai_p = OpenAIParser()
-        response = await openai_p.get_response_in_stream(
-            update.effective_user.id,
+        response = await self.message_manager.get_response_in_stream(
             update.effective_chat.id,
+            update.effective_user.id,
             update.effective_message.message_id,
             message,
             chat_text_first_chunk_callback,

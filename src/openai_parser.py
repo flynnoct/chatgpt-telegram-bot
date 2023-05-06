@@ -66,10 +66,7 @@ class OpenAIParser:
         LoggingManager.debug("Get OpenAI GPT response in stream for user: %s" % userid, "OpenAIParser")
         response = await openai.ChatCompletion.acreate(
             model = ConfigLoader.get("openai", "chat_model"),
-            messages = [
-                {"role": "system", "content": "You are a helpful assistant"},
-                {"role": "user", "content": context_messages}
-                ], #TODO
+            messages = context_messages,
             stream = True
             )
         collected_messages = ""
