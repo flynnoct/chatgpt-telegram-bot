@@ -12,7 +12,7 @@ We adjusted configuration format since v1.4.0, which is NOT compatible with prev
 - **ChatGPT temperature** is now supported! You can set the temperature in configuration to customize the creativity of ChatGPT reply.
 - A better **logging system** is provided for debugging purposes.
 - A better-organized config structure is provided. You should go through the [config doc](./docs/config_file.md) and modify the config file. We have temporarily removed the `config.py` configuration script.
-- Model selection ability is added. You can now choose the model you want to use in the config file. The bot can be powered by GPT-4 if you have access.
+- Model selection ability is added. You can now choose the model you want to use in the config file. The Bot can be powered by GPT-4 if you have access.
 
 ## 🐱 Introduction
 
@@ -37,8 +37,8 @@ The Telegram Bot features the following functions:
 Additonal features:
 
 - ChatGPT role and temperature Customization.
-- The Telegram _inline mode_ allows you to query the Bot privately in a chat with a contact or group, even if the bot is not a member.
-- User White-list to control who can use the bot. You can also set `allow_all_users` to `true` to allow any users to use the Bot.
+- The Telegram _inline mode_ allows you to query the Bot privately in a chat with a contact or group, even if the Bot is not a member.
+- User White-list to control who can use the Bot. You can also set `allow_all_users` to `true` to allow any users to use the Bot.
 - Set the daily limitation of requirements to **DALL·E**.
 - Grant more resources to _Super Users_.
 - Docker deployment is supported. (This method is maintained by community. Thanks for @EstrellaXD 's contribution)
@@ -47,11 +47,12 @@ Additonal features:
 
 ### Preparation
 
-1. Create a Telegram bot by [@BotFather](https://t.me/BotFather) and get the token.
+1. Create a Telegram Bot by [@BotFather](https://t.me/BotFather) and get the token.
 2. Create an OpenAI account and get the API key.
-3. A Linux VM or a server with Python 3 is needed to run the bot.
+3. A Linux VM or a server with Python 3 is needed to run the Bot.
 4. A practical Internet environment is required.
 5. (Optional) [FFmpeg](https://ffmpeg.org) is required for the Bot to handle voice messages with Whisper. If you are not interested in using voice messages, you don't need to install it and **must set `enable_voice` in the config file to False**.
+6. (Optional) [Azure TTS SDK](https://learn.microsoft.com/en-us/azure/cognitive-services/speech-service/quickstarts/setup-platform?pivots=programming-language-python&tabs=linux) is required for the Bot to reply with voice messages.
 
 ### Installation
 
@@ -71,46 +72,59 @@ The config file includes sensitive information, such as telegram_token and opena
 cp config.json.template config.json
 ```
 
-**Recommended:** You should keep `config.json.template` unmodified because the bot needs to read default configuration values from it. For backward compatibility, it is highly recommended to check the template for newly added parameters when you update to a new version.
+**Recommended:** You should keep `config.json.template` unmodified because the Bot needs to read default configuration values from it. For backward compatibility, it is highly recommended to check the template for newly added parameters when you update to a new version.
 
 For more details, see [documentation](docs/config_file.md).
 
-3. Run the Bot with `start_bot.sh` and try talk to it. Also, you can invite it to group chats and share with your friends! Or you can also use docker to run the bot.
+3. Run the Bot with `start_bot.sh` and try talk to it. You can also use docker to run the Bot.
 
 ```bash
 # First, make sure you are in the root directory of the project,
 # aka <your_download_location>/chatgpt-telegram-bot
-bash ./bin/start_bot.sh # start the bot
+bash ./bin/start_bot.sh # start the Bot
 
-# Use docker compose to run the bot
+# Use docker compose to run the Bot
 docker compose up -d
 ```
 
 To clear ChatGPT conversation context and restart the Bot, run shell script `restart_bot.sh`. To shut down the Bot, run `stop_bot.sh`.
 
 ```bash
-bash ./bin/restart_bot.sh # restart the bot
-bash ./bin/stop_bot.sh # stop the bot
+bash ./bin/restart_bot.sh # restart the Bot
+bash ./bin/stop_bot.sh # stop the Bot
 ```
 
-## 👋 Usage
+Up to now, you have successfully deployed the Bot.
+
+### Usage
 
 The Bot works in both personal and group chat of Telegram.
-
 In a personal chat, simply send a message to the Bot and it will reply to you.
-
-In a group chat, use the `/chat` to invoke the Bot. It will not collect any other message except the prompts after the command.
+In a group chat, use the `/chat` to invoke the Bot. 
 
 In a personal chat with a contact, use `@your_bot_name <your messages>` to invoke the Bot with Telegram inline mode. Both you and your contact can see the Bot's reply in the chat. 
 
-### Bot Commands
+1. The following commands are supported:
 
-- `/start`: Start the bot.
+- `/start`: Start the Bot.
 - `/role <prompt>`: Set role for conversation.
 - `/chat` : Invoke the Bot in group chat.
 - `/dalle <prompt>`: Ask DALL·E for a painting based on your prompt.
 - `/clear`: Clear the conversation context.
 - `/getid`: Get your Telegram user ID.
+
+(Optinal) You can set them up as Telegram Bot command, see [here](https://core.telegram.org/bots/tutorial#creating-your-command).
+
+2. Inline mode
+
+To enable inline mode, see [here](https://core.telegram.org/bots/api#inline-mode). 
+
+Type `/mybots` > Your_Bot_Name > Bot Settings > Inline Feedback, you must set the `Inline Feedback` to 100%.
+
+
+### TroubleShooting
+
+See [documentation](./docs/troubleshooting.md).
 
 ## 🧑‍💻 For developers
 
