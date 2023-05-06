@@ -32,16 +32,16 @@ class OpenAIParser:
         # openai.organization = self.config_dict["ORGANIZATION"] if "ORGANIZATION" in self.config_dict else "Personal"
         openai.api_key = ConfigLoader.get("openai", "api_key")
 
-    def _get_single_response(self, message):
-        response = openai.ChatCompletion.create(model = ConfigLoader.get("openai", "chat_model"),
+    async def _get_single_response(self, message):
+        response = await openai.ChatCompletion.acreate(model = ConfigLoader.get("openai", "chat_model"),
                                                 messages = [
                                                     {"role": "system", "content": "You are a helpful assistant"},
                                                     {"role": "user", "content": message}
                                                     ]
                                                 )
         return response["choices"][0]["message"]["content"]
-    
-    def get_response(self, userid, context_messages):
+
+    async def get_response(self, userid, context_messages):
         LoggingManager.debug("Get OpenAI GPT response for user: %s" % userid, "OpenAIParser")
         # context_messages.insert(0, {"role": "system", "content": "You are a helpful assistant"})
         try:
@@ -51,7 +51,7 @@ class OpenAIParser:
             signal.signal(signal.SIGALRM, timeout_handler)
             signal.alarm(int(ConfigLoader.get("openai", "api_timeout")))
             #### Timer ####
-            response = openai.ChatCompletion.create(
+            response = await openai.ChatCompletion.acreate(
                 model = ConfigLoader.get("openai", "chat_model"),
                 messages = context_messages
                 )

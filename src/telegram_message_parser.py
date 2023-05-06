@@ -24,7 +24,6 @@ from access_manager import AccessManager
 from config_loader import ConfigLoader
 from azure_parser import AzureParser
 
-
 class TelegramMessageParser:
 
     # config_dict = {}
@@ -110,7 +109,7 @@ class TelegramMessageParser:
         )
 
         # send message to openai
-        response = self.message_manager.get_response(
+        response = await self.message_manager.get_response(
             str(update.effective_chat.id), 
             str(update.effective_user.id), 
             message
@@ -118,7 +117,12 @@ class TelegramMessageParser:
         # reply response to user
         # await update.message.reply_text(self.escape_str(response), parse_mode='MarkdownV2')
         LoggingManager.debug("Sending response to user: %s" % str(update.effective_user.id), "TelegramMessageParser")
-        await update.message.reply_text(response)
+        await context.bot.send_message(
+            chat_id = update.effective_chat.id,
+            text = response,
+            reply_to_message_id = update.effective_message.message_id,
+            allow_sending_without_reply = True
+        )
 
     # command chat messages
     async def chat_text_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
