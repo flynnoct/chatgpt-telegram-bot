@@ -77,12 +77,19 @@ class OpenAIParser:
             chunk_delta = chunk['choices'][0]['delta']
             chunk_finish_reason = chunk['choices'][0]['finish_reason']
             if chunk_finish_reason == "stop":
-                await edit_message_callback(
-                    collected_messages,
-                    chat_id,
-                    response_message_id,
-                    )
-                return collected_messages
+                if first_chunk:
+                    await send_message_callback(
+                        collected_messages,
+                        chat_id,
+                        original_message_id
+                        )
+                else:
+                    await edit_message_callback(
+                        collected_messages,
+                        chat_id,
+                        response_message_id,
+                        )
+                return (collected_messages, 0)
             else:
                 if "content" in chunk_delta:
                     increased_len += 1
