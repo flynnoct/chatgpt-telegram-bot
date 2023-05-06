@@ -62,6 +62,53 @@ class OpenAIParser:
             LoggingManager.error("OpenAI GPT request for user %s with error: %s" % (userid, str(e)), "OpenAIParser")
             return ("Oops, something went wrong with OpenAI. Please try again later.", 0)
 
+    async def get_response_in_stream(self, userid, chat_id, original_message_id, context_messages, send_message_callback, edit_message_callback):
+        LoggingManager.debug("Get OpenAI GPT response in stream for user: %s" % userid, "OpenAIParser")
+        response = await openai.ChatCompletion.acreate(
+            model = ConfigLoader.get("openai", "chat_model"),
+            messages = [
+                {"role": "system", "content": "You are a helpful assistant"},
+                {"role": "user", "content": context_messages}
+                ], #TODO
+            stream = True
+            )
+        collected_messages = ""
+        response_message_id = ""
+        first_chunk = True
+        increased_len = 0
+        async for chunk in response:
+            chunk_delta = chunk['choices'][0]['delta']
+            chunk_finish_reason = chunk['choices'][0]['finish_reason']
+            if chunk_finish_reason == "stop":
+                await edit_message_callback(
+                    collected_messages,
+                    chat_id,
+                    response_message_id,
+                    )
+                return collected_messages
+            else:
+                if "content" in chunk_delta:
+                    increased_len += 1
+                    collected_messages += chunk_delta["content"]
+                    if first_chunk and increased_len > 32:
+                        first_chunk = False
+                        response_message_id = await send_message_callback(
+                            collected_messages,
+                            chat_id,
+                            original_message_id
+                            )
+                        increased_len = 0
+                    elif increased_len > 64:
+                        await edit_message_callback(
+                            collected_messages,
+                            chat_id,
+                            response_message_id,
+                            )
+                        increased_len = 0
+        # TODO: handle usage and timeout
+        return (collected_messages, 0)
+
+
     def speech_to_text(self, userid, audio_file):
         LoggingManager.debug("Get OpenAI Speech to Text for user: %s" % userid, "OpenAIParser")
         # transcript = openai.Audio.transcribe("whisper-1", audio_file, language="zh")

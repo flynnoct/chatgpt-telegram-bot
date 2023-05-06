@@ -24,6 +24,8 @@ from access_manager import AccessManager
 from config_loader import ConfigLoader
 from azure_parser import AzureParser
 
+from openai_parser import OpenAIParser
+
 class TelegramMessageParser:
 
     # config_dict = {}
@@ -109,20 +111,45 @@ class TelegramMessageParser:
         )
 
         # send message to openai
-        response = await self.message_manager.get_response(
-            str(update.effective_chat.id), 
-            str(update.effective_user.id), 
-            message
+        # response = await self.message_manager.get_response(
+        #     str(update.effective_chat.id), 
+        #     str(update.effective_user.id), 
+        #     message
+        #     )
+
+        # send first message chunk to user
+        async def chat_text_first_chunk_callback(response_message, chat_id, original_message_id):
+            message = await context.bot.send_message(
+                chat_id = chat_id,
+                text = response_message,
+                reply_to_message_id = original_message_id,
+                allow_sending_without_reply = True
             )
+            message_id = message.message_id
+            return message_id
+
+        # append message blocks in stream
+        async def chat_text_append_chunks_callback(response_message, chat_id, response_message_id):
+            await context.bot.edit_message_text(
+                chat_id = chat_id,
+                message_id = response_message_id,
+                text = response_message
+            )
+
+        openai_p = OpenAIParser()
+        response = await openai_p.get_response_in_stream(
+            update.effective_user.id,
+            update.effective_chat.id,
+            update.effective_message.message_id,
+            message,
+            chat_text_first_chunk_callback,
+            chat_text_append_chunks_callback
+        )
+
         # reply response to user
         # await update.message.reply_text(self.escape_str(response), parse_mode='MarkdownV2')
         LoggingManager.debug("Sending response to user: %s" % str(update.effective_user.id), "TelegramMessageParser")
-        await context.bot.send_message(
-            chat_id = update.effective_chat.id,
-            text = response,
-            reply_to_message_id = update.effective_message.message_id,
-            allow_sending_without_reply = True
-        )
+
 
     # command chat messages
     async def chat_text_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
