@@ -2,6 +2,7 @@ import time
 import datetime
 import os
 import logging
+import asyncio
 from access_manager import AccessManager
 from chat_session import ChatSession
 from openai_parser import OpenAIParser
@@ -16,28 +17,31 @@ class MessageManager:
         self.__access_manager = access_manager
         self.__userDict = {}
 
-    def get_response(self, id, user, message, is_voice = False):
+    async def get_response(self, id, user, message, is_voice = False):
         LoggingManager.debug("Get response for user: %s" % id, "MessageManager")
         t = time.time()
 
         if id not in self.__userDict:
             # new user
-            self.__userDict[id] = ChatSession(t, message)
-        else:
+            self.__userDict[id] = ChatSession(t)
+
+        async with self.__userDict[id].lock:
             self.__userDict[id].update(t, message, "user")
+                
+            if is_voice == True:
+                self.__userDict[id].set_voice()
             
-        if is_voice == True:
-            self.__userDict[id].set_voice()
-        
-        # send user info for statistics
-        (answer, usage) = self.__sendMessage(
-            user, self.__userDict[id].messageList)
-        
-        if is_voice == True:
-            self.__userDict[id].unset_voice()
-        
-        self.__userDict[id].update(t, answer, "assistant")
-        self.__access_manager.update_usage_info(user, usage, "chat")
+            # send user info for statistics            
+
+            (answer, usage) = await self.__sendMessage(
+                user, self.__userDict[id].messageList)
+            
+            if is_voice == True:
+                self.__userDict[id].unset_voice()
+            
+            self.__userDict[id].update(t, answer, "assistant")
+            self.__access_manager.update_usage_info(user, usage, "chat")
+          
         return answer
 
     def clear_context(self, id):
@@ -68,7 +72,7 @@ class MessageManager:
 
         return self.__openai_parser.speech_to_text(user, audio_file)
     
-    def set_system_role(self, id, user, message):
+    async def set_system_role(self, id, user, message):
         LoggingManager.debug("Set system role for chat: %s" % id, "MessageManager")
         t = time.time()
         if id not in self.__userDict:
@@ -76,15 +80,15 @@ class MessageManager:
         self.__userDict[id].set_system_role(t, message)   
         
         # send first sentence
-        (answer, usage) = self.__sendMessage(user, 
+        (answer, usage) = await self.__sendMessage(user, 
                 [{"role": "system", "content": message}, 
                  {"role": "user", "content":"Say hello to me."}])
         self.__access_manager.update_usage_info(user, usage, "chat")
         return answer
         
 
-    def __sendMessage(self, user, messageList):
-        ans = self.__openai_parser.get_response(user, messageList)
+    async def __sendMessage(self, user, messageList):
+        ans = await self.__openai_parser.get_response(user, messageList)
         return ans
     
     
