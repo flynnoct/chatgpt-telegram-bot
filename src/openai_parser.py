@@ -18,6 +18,7 @@ import logging
 import signal
 from config_loader import ConfigLoader
 from logging_manager import LoggingManager
+from helpers import num_tokens_from_messages
 
 class OpenAIParser:
 
@@ -81,15 +82,19 @@ class OpenAIParser:
                     await send_message_callback(
                         collected_messages,
                         chat_id,
-                        original_message_id
+                        original_message_id,
+                        finished = True
                         )
                 else:
                     await edit_message_callback(
                         collected_messages,
                         chat_id,
                         response_message_id,
+                        finished = True
                         )
-                return (collected_messages, 0)
+                context_messages.append({"role": "assistant", "content": collected_messages})
+                token_used = num_tokens_from_messages(context_messages, ConfigLoader.get("openai", "chat_model"))
+                return (collected_messages, token_used)
             else:
                 if "content" in chunk_delta:
                     increased_len += 1
@@ -110,7 +115,9 @@ class OpenAIParser:
                             )
                         increased_len = 0
         # TODO: handle usage and timeout
-        return (collected_messages, 0)
+        context_messages.append({"role": "assistant", "content": collected_messages})
+        token_used = num_tokens_from_messages(context_messages, ConfigLoader.get("openai", "chat_model"))
+        return (collected_messages, token_used)
 
 
     def speech_to_text(self, userid, audio_file):
