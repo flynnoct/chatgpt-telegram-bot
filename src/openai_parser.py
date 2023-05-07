@@ -64,7 +64,6 @@ class OpenAIParser:
             return ("Oops, something went wrong with OpenAI. Please try again later.", 0)
 
     async def get_response_in_stream(self, userid, chat_id, original_message_id, context_messages, send_message_callback, edit_message_callback):
-        print(context_messages)
         LoggingManager.debug("Get OpenAI GPT response in stream for user: %s" % userid, "OpenAIParser")
         response = await openai.ChatCompletion.acreate(
             model = ConfigLoader.get("openai", "chat_model"),
