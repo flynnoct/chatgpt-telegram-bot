@@ -113,7 +113,7 @@ class MessageManager:
             self.__userDict[str_id].set_system_role(t, message)   
             
             # send first sentence
-            (answer, usage) = await self.__sendMessage(user_id 
+            (answer, usage) = await self.__sendMessage(user_id, 
                     [{"role": "system", "content": message}, 
                     {"role": "user", "content":"Say hello to me."}])
             self.__access_manager.update_usage_info(str_user, usage, "chat")
