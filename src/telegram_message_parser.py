@@ -12,7 +12,7 @@ __email__ = i@flynnoct.com
 __status__ = Dev
 """
 
-from telegram import Update, InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardButton, InlineKeyboardMarkup, helpers
+from telegram import Update, InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, InlineQueryHandler, ChosenInlineResultHandler, ContextTypes, filters
 import json, os
 import logging
@@ -23,6 +23,7 @@ from logging_manager import LoggingManager
 from access_manager import AccessManager
 from config_loader import ConfigLoader
 from azure_parser import AzureParser
+from helpers import escape_markdownv2
 
 class TelegramMessageParser:
 
@@ -108,39 +109,66 @@ class TelegramMessageParser:
             action="typing"
         )
 
-        # send message to openai
-        # response = await self.message_manager.get_response(
-        #     str(update.effective_chat.id), 
-        #     str(update.effective_user.id), 
-        #     message
-        #     )
+        # CALLBACK FUNC: send first message chunk to user
+        async def chat_text_first_chunk_callback(response_message, chat_id, original_message_id, finished = False):
+            LoggingManager.debug("Sending first chunk of message to user: %s" % str(update.effective_user.id), "TelegramMessageParser")
+            if finished:
+                LoggingManager.debug("Sending finished message to user: %s" % str(update.effective_user.id), "TelegramMessageParser")
+                try:
+                    escaped_response_message = escape_markdownv2(response_message)
+                    message = await context.bot.send_message(
+                        chat_id = chat_id,
+                        text = escaped_response_message,
+                        reply_to_message_id = original_message_id,
+                        allow_sending_without_reply = True,
+                        parse_mode = 'MarkdownV2'
+                    )
+                except:
+                    LoggingManager.warning("Failed to parse message in MarkdownV2, using plain text instead.", "TelegramMessageParser")
+                    message = await context.bot.send_message(
+                        chat_id = chat_id,
+                        text = response_message,
+                        reply_to_message_id = original_message_id,
+                        allow_sending_without_reply = True
+                    )
+            else:
+                message = await context.bot.send_message(
+                    chat_id = chat_id,
+                    text = response_message,
+                    reply_to_message_id = original_message_id,
+                    allow_sending_without_reply = True,
+                )
+                message_id = message.message_id
+                return message_id
 
-        # send first message chunk to user
-        async def chat_text_first_chunk_callback(response_message, chat_id, original_message_id):
-            # response_message = helpers.escape_markdown(response_message, version=2)
-            print(response_message)
-            message = await context.bot.send_message(
-                chat_id = chat_id,
-                text = response_message,
-                reply_to_message_id = original_message_id,
-                allow_sending_without_reply = True,
-                parse_mode = 'MarkdownV2'
-            )
-            message_id = message.message_id
-            return message_id
+        # CALLBACK FUNC: append message blocks in stream
+        async def chat_text_append_chunks_callback(response_message, chat_id, response_message_id, finished = False):
+            LoggingManager.debug("Appending message stream to user: %s" % str(update.effective_user.id), "TelegramMessageParser")
+            if finished:
+                LoggingManager.debug("Appending finished message to user: %s" % str(update.effective_user.id), "TelegramMessageParser")
+                try:
+                    escaped_response_message = escape_markdownv2(response_message)
+                    await context.bot.edit_message_text(
+                        chat_id = chat_id,
+                        message_id = response_message_id,
+                        text = escaped_response_message,
+                        parse_mode = 'MarkdownV2'
+                    )
+                except:
+                    LoggingManager.warning("Failed to parse message in MarkdownV2, using plain text instead.", "TelegramMessageParser")
+                    await context.bot.edit_message_text(
+                        chat_id = chat_id,
+                        message_id = response_message_id,
+                        text = escaped_response_message
+                    )
+            else:
+                await context.bot.edit_message_text(
+                    chat_id = chat_id,
+                    message_id = response_message_id,
+                    text = response_message
+                )
 
-        # append message blocks in stream
-        async def chat_text_append_chunks_callback(response_message, chat_id, response_message_id):
-            # response_message = helpers.escape_markdown(response_message, version=2)
-            print(response_message)
-            await context.bot.edit_message_text(
-                chat_id = chat_id,
-                message_id = response_message_id,
-                text = response_message,
-                parse_mode = 'MarkdownV2'
-            )
-
-        # reply response to user
+        # send message to openai & reply response to user
         LoggingManager.debug("Sending response to user: %s" % str(update.effective_user.id), "TelegramMessageParser")
         response = await self.message_manager.get_response_in_stream(
             update.effective_chat.id,
@@ -175,27 +203,65 @@ class TelegramMessageParser:
             action="typing"
         )
 
-        # send first message chunk to user
-        async def chat_text_first_chunk_callback(response_message, chat_id, original_message_id):
-            message = await context.bot.send_message(
-                chat_id = chat_id,
-                text = response_message,
-                reply_to_message_id = original_message_id,
-                allow_sending_without_reply = True,
-                parse_mode = 'MarkdownV2'
-            )
-            message_id = message.message_id
-            return message_id
+        # CALLBACK FUNC: send first message chunk to user
+        async def chat_text_first_chunk_callback(response_message, chat_id, original_message_id, finished = False):
+            LoggingManager.debug("Sending first chunk of message to user: %s" % str(update.effective_user.id), "TelegramMessageParser")
+            if finished:
+                LoggingManager.debug("Sending finished message to user: %s" % str(update.effective_user.id), "TelegramMessageParser")
+                try:
+                    escaped_response_message = escape_markdownv2(response_message)
+                    message = await context.bot.send_message(
+                        chat_id = chat_id,
+                        text = escaped_response_message,
+                        reply_to_message_id = original_message_id,
+                        allow_sending_without_reply = True,
+                        parse_mode = 'MarkdownV2'
+                    )
+                except:
+                    LoggingManager.warning("Failed to parse message in MarkdownV2, using plain text instead.", "TelegramMessageParser")
+                    message = await context.bot.send_message(
+                        chat_id = chat_id,
+                        text = response_message,
+                        reply_to_message_id = original_message_id,
+                        allow_sending_without_reply = True
+                    )
+            else:
+                message = await context.bot.send_message(
+                    chat_id = chat_id,
+                    text = response_message,
+                    reply_to_message_id = original_message_id,
+                    allow_sending_without_reply = True,
+                )
+                message_id = message.message_id
+                return message_id
 
-        # append message blocks in stream
-        async def chat_text_append_chunks_callback(response_message, chat_id, response_message_id):
-            await context.bot.edit_message_text(
-                chat_id = chat_id,
-                message_id = response_message_id,
-                text = response_message,
-                parse_mode = 'MarkdownV2'
-            )
-
+        # CALLBACK FUNC: append message blocks in stream
+        async def chat_text_append_chunks_callback(response_message, chat_id, response_message_id, finished = False):
+            LoggingManager.debug("Appending message stream to user: %s" % str(update.effective_user.id), "TelegramMessageParser")
+            if finished:
+                LoggingManager.debug("Appending finished message to user: %s" % str(update.effective_user.id), "TelegramMessageParser")
+                try:
+                    escaped_response_message = escape_markdownv2(response_message)
+                    await context.bot.edit_message_text(
+                        chat_id = chat_id,
+                        message_id = response_message_id,
+                        text = escaped_response_message,
+                        parse_mode = 'MarkdownV2'
+                    )
+                except:
+                    LoggingManager.warning("Failed to parse message in MarkdownV2, using plain text instead.", "TelegramMessageParser")
+                    await context.bot.edit_message_text(
+                        chat_id = chat_id,
+                        message_id = response_message_id,
+                        text = escaped_response_message
+                    )
+            else:
+                await context.bot.edit_message_text(
+                    chat_id = chat_id,
+                    message_id = response_message_id,
+                    text = response_message
+                )
+                
         # reply response to user
         LoggingManager.debug("Sending response to user: %s" % str(update.effective_user.id), "TelegramMessageParser")
         response = await self.message_manager.get_response_in_stream(
