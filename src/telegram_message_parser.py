@@ -56,32 +56,32 @@ class TelegramMessageParser:
 
     def add_handlers(self):
         # command handlers
-        self.bot.add_handler(CommandHandler("start", self.start))
-        self.bot.add_handler(CommandHandler("clear", self.clear_context))
-        self.bot.add_handler(CommandHandler("getid", self.get_user_id))
+        self.bot.add_handler(CommandHandler("start", self.cmd_start))
+        self.bot.add_handler(CommandHandler("clear", self.cmd_clear_context))
+        self.bot.add_handler(CommandHandler("getid", self.cmd_get_user_id))
 
         # special message handlers
         if ConfigLoader.get("voice_message", "enable_voice"):
             self.bot.add_handler(MessageHandler(filters.VOICE, self.chat_voice))
         if ConfigLoader.get("image_generation", "enable_dalle"):
-            self.bot.add_handler(CommandHandler("dalle", self.image_generation))
+            self.bot.add_handler(CommandHandler("dalle", self.cmd_image_generation))
         if ConfigLoader.get("openai", "enable_custom_system_role"):
-            self.bot.add_handler(CommandHandler("role", self.set_system_role))
-        self.bot.add_handler(MessageHandler(filters.PHOTO | filters.AUDIO | filters.VIDEO, self.chat_file))
+            self.bot.add_handler(CommandHandler("role", self.cmd_set_system_role))
 
         # inline query handler
         if ConfigLoader.get("telegram", "enable_inline_mode"):
             self.bot.add_handler(InlineQueryHandler(self.inline_query))
             self.bot.add_handler(ChosenInlineResultHandler(self.inline_query_result_chosen))
 
-        # normal message handlers
-        # self.bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), self.chat_text))
+        self.bot.add_handler(MessageHandler(filters.PHOTO | filters.AUDIO | filters.VIDEO, self.chat_file))
+
         # normal chat messages handlers in private chat
         self.bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), self.chat_text))
-        self.bot.add_handler(CommandHandler("chat", self.chat_text_command))
+        # normal message handlers in group chat
+        self.bot.add_handler(CommandHandler("chat", self.cmd_chat_text))
 
         # unknown command handler
-        self.bot.add_handler(MessageHandler(filters.COMMAND, self.unknown))
+        self.bot.add_handler(MessageHandler(filters.COMMAND, self.cmd_unknown))
 
     # normal chat messages
     async def chat_text(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -153,9 +153,8 @@ class TelegramMessageParser:
 
         # await update.message.reply_text(self.escape_str(response), parse_mode='MarkdownV2')
 
-
     # command chat messages
-    async def chat_text_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def cmd_chat_text(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         LoggingManager.info("Get a chat message (triggered by command) from user: %s" % str(update.effective_user.id), "TelegramMessageParser")
         
         # get message
@@ -310,7 +309,7 @@ class TelegramMessageParser:
             )
 
     # image_generation command, aka DALLE
-    async def image_generation(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def cmd_image_generation(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         LoggingManager.info("Get an image generation command from user: %s" % str(update.effective_user.id), "TelegramMessageParser")
         # remove dalle command from message
         # message = update.effective_message.text.replace("/dalle", "")
@@ -416,9 +415,7 @@ class TelegramMessageParser:
         except Exception as e:
             pass
             
-
-    # file and photo messages
-
+    # reserved, file and photo messages
     async def chat_file(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         # get message
         message = update.effective_message.text
@@ -444,7 +441,7 @@ class TelegramMessageParser:
         )
 
     # start command
-    async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def cmd_start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         LoggingManager.info("Get a start command from user: %s" % str(update.effective_user.id), "TelegramMessageParser")
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -452,7 +449,7 @@ class TelegramMessageParser:
         )
 
     # clear context command
-    async def clear_context(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def cmd_clear_context(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         LoggingManager.info("Get a clear context command from user: %s" % str(update.effective_user.id), "TelegramMessageParser")
         allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
         if not allowed:
@@ -469,7 +466,7 @@ class TelegramMessageParser:
         )
 
     # get user id command
-    async def get_user_id(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def cmd_get_user_id(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         LoggingManager.info("Get a get user ID command from user: %s, username: %s, first_name: %s, last_name: %s" % (str(update.effective_user.id), update.effective_user.username, update.effective_user.first_name, update.effective_user.last_name), "TelegramMessageParser")
 
         await context.bot.send_message(
@@ -478,7 +475,7 @@ class TelegramMessageParser:
         )
 
     # set system role command
-    async def set_system_role(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def cmd_set_system_role(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         arg_str = " ".join(context.args)
         LoggingManager.info("Set system role to %s from user: %s" % (arg_str, str(update.effective_user.id)), "TelegramMessageParser")
         allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
@@ -492,7 +489,7 @@ class TelegramMessageParser:
         await update.message.reply_text(reply_message)
 
     # unknown command
-    async def unknown(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def cmd_unknown(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         LoggingManager.info("Get an unknown command from user: %s" % str(update.effective_user.id), "TelegramMessageParser")
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
