@@ -18,7 +18,7 @@ class MessageManager:
         self.__userDict = {}
         
     async def get_response_in_stream(self, chat_id, user_id, message_id, message, chat_text_first_chunk_callback, chat_text_append_chunks_callback, is_voice = False):
-        LoggingManager.debug("Get response for user in stream mode: %s" % id, "MessageManager")
+        LoggingManager.debug("Get response for user in stream mode: %s" % str(user_id), "MessageManager")
         t = time.time()
         str_id = str(chat_id)
         str_user = str(user_id)
@@ -46,7 +46,7 @@ class MessageManager:
         return answer
 
     async def get_response(self, chat_id, user_id, message, is_voice = False):
-        LoggingManager.debug("Get response for user: %s" % id, "MessageManager")
+        LoggingManager.debug("Get response for user: %s" % str(user_id), "MessageManager")
         t = time.time()
         str_id = str(chat_id)
         str_user = str(user_id)
@@ -102,7 +102,7 @@ class MessageManager:
         return self.__openai_parser.speech_to_text(user, audio_file)
     
     async def set_system_role(self, chat_id, user_id, message):
-        LoggingManager.debug("Set system role for chat: %s" % id, "MessageManager")
+        LoggingManager.debug("Set system role for chat: %s" % str(user_id), "MessageManager")
         t = time.time()
         str_id = str(chat_id)
         str_user = str(user_id)
