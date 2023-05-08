@@ -1,6 +1,7 @@
 import copy
 import logging
 from config_loader import ConfigLoader
+from logging_manager import LoggingManager
 
 class ChatSession:
     
@@ -8,11 +9,9 @@ class ChatSession:
     # __messageList = []
     
     def __init__(self, contactTime, message):
-        # setup logger
-        self.logger = logging.getLogger("ChatSession")
         # first message
         self.__messageList = []
-        self.__system_role = ConfigLoader.get('system_role')
+        self.__system_role = ConfigLoader.get("openai", "default_system_role")
         self.__latestTime = contactTime
         self.__messageList.append(
             {"role": "user", "content": message}
@@ -31,20 +30,27 @@ class ChatSession:
     
     def update(self, contactTime, message, source):
         # check time
-        if (source == "user") and (contactTime - self.__latestTime > ConfigLoader.get("wait_time")) :
+        if (source == "user") and (contactTime - self.__latestTime > ConfigLoader.get("telegram", "context_expiration_time")) :
             # refresh message list
-            self.logger.info("Context expired, clear context.")
+            LoggingManager.info("Context expired, clear context.", "ChatSession")
             self.__messageList.clear()
-            self.__system_role = ConfigLoader.get('system_role')
+            self.__system_role = ConfigLoader.get("openai", "default_system_role")
         self.__latestTime = contactTime
         self.__messageList.append(
             {"role": source, "content": message}
         )
         
+    def set_voice(self):
+        voiceSetStr = "Your response will be converted to speech, so please keep your response concise and use language that mimics human speech. "
+        self.__system_role = voiceSetStr + self.__system_role
+        
+    def unset_voice(self):
+        self.__system_role = self.__system_role.replace("Your response will be converted to speech, so please keep your response concise and use language that mimics human speech. ", "")     
+        
     def clear_context(self, clear_time):
         self.__latestTime = clear_time
         self.__messageList.clear()
-        self.__system_role = ConfigLoader.get('system_role')
+        self.__system_role = ConfigLoader.get("openai", "default_system_role")
         
 if __name__ == "__main__":
     chatA = ChatSession(1, "a")

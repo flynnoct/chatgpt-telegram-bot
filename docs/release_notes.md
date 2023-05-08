@@ -1,5 +1,14 @@
 # Version history
 
+## v1.4.0
+
+- Add support for Azure TTS.
+- Add temperature config of ChatGPT.
+- Improve the logging system.
+- Throughoutly refactor the config file. Previous config templates are no longer compatible.
+- The `config.py` script is removed. Please manually modify the config file.
+
+
 ## v1.3.1
 
 For backward compatibility, we add default parameter values to the `config.json.template` for newly added parameters.
