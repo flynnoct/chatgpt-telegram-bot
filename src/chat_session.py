@@ -14,6 +14,7 @@ class ChatSession:
         self.__messageList = []
         self.__system_role = ConfigLoader.get("openai", "default_system_role")
         self.__latestTime = contactTime
+        self.no_context_mode = False
         self.lock = asyncio.Lock()
             
     def __repr__(self):
@@ -24,7 +25,7 @@ class ChatSession:
         return [{"role": "system", "content": self.__system_role}] + self.__messageList
     
     def set_system_role(self, contactTime, message):
-        self.clear_context(contactTime)
+        self.clear_all(contactTime)
         self.__system_role = message
     
     def update(self, contactTime, message, source):
@@ -35,6 +36,10 @@ class ChatSession:
             self.__messageList.clear()
             self.__system_role = ConfigLoader.get("openai", "default_system_role")
         self.__latestTime = contactTime
+        
+        if self.no_context_mode == True and source == "user":
+            self.clear_context(contactTime)
+        
         self.__messageList.append(
             {"role": source, "content": message}
         )
@@ -49,7 +54,18 @@ class ChatSession:
     def clear_context(self, clear_time):
         self.__latestTime = clear_time
         self.__messageList.clear()
+        
+    def clear_all(self, clear_time):
+        self.__latestTime = clear_time
+        self.__messageList.clear()
         self.__system_role = ConfigLoader.get("openai", "default_system_role")
+        
+    async def toggle_no_context_mode(self, contactTime, target_mode):
+        if target_mode == None:
+            self.no_context_mode = not self.no_context_mode
+        else:
+            self.no_context_mode = target_mode
+        return self.no_context_mode
         
 if __name__ == "__main__":
     chatA = ChatSession(1, "a")
