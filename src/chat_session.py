@@ -61,11 +61,12 @@ class ChatSession:
         self.__system_role = ConfigLoader.get("openai", "default_system_role")
         
     async def toggle_no_context_mode(self, contactTime, target_mode):
+        if self.no_context_mode == True:
+            self.clear_context(contactTime)
         if target_mode == None:
             self.no_context_mode = not self.no_context_mode
         else:
             self.no_context_mode = target_mode
-        self.clear_context(contactTime)
         return self.no_context_mode
         
 if __name__ == "__main__":
