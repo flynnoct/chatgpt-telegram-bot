@@ -1,5 +1,6 @@
 import copy
 import logging
+import asyncio
 from config_loader import ConfigLoader
 from logging_manager import LoggingManager
 
@@ -8,14 +9,12 @@ class ChatSession:
     # __latestTime = 0
     # __messageList = []
     
-    def __init__(self, contactTime, message):
+    def __init__(self, contactTime):
         # first message
         self.__messageList = []
         self.__system_role = ConfigLoader.get("openai", "default_system_role")
         self.__latestTime = contactTime
-        self.__messageList.append(
-            {"role": "user", "content": message}
-        )
+        self.lock = asyncio.Lock()
             
     def __repr__(self):
         return str(self.messageList) + '\n'

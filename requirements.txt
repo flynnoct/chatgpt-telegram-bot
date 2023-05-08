@@ -2,3 +2,4 @@ azure-cognitiveservices-speech==1.27.0
 langid==1.1.6
 openai==0.27.0
 python-telegram-bot==20.2
+tiktoken
