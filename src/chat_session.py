@@ -65,6 +65,7 @@ class ChatSession:
             self.no_context_mode = not self.no_context_mode
         else:
             self.no_context_mode = target_mode
+        self.clear_context(contactTime)
         return self.no_context_mode
         
 if __name__ == "__main__":
