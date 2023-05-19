@@ -58,6 +58,7 @@ class ChatSession:
     def clear_all(self, clear_time):
         self.__latestTime = clear_time
         self.__messageList.clear()
+        self.no_context_mode = False
         self.__system_role = ConfigLoader.get("openai", "default_system_role")
         
     async def toggle_no_context_mode(self, contactTime, target_mode):
