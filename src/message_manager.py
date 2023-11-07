@@ -8,3 +8,6 @@ class MessageManager:
 
     async def get_chat_response(self, user_id, message_text):
         return self.openai_parser.get_chat_response(user_id, message_text)
+    
+    async def get_vision_response(self, text, image_url):
+        return self.openai_parser.get_vision_response(text, image_url)

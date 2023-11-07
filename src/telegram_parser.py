@@ -12,6 +12,9 @@ __email__ = contact@flynnoct.com
 __status__ = Dev
 """
 
+import asyncio
+import random
+
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, InlineQueryHandler, ChosenInlineResultHandler, ContextTypes, filters
 
@@ -54,7 +57,7 @@ class TelegramParser:
         # self.bot.add_handler(MessageHandler(filters.AUDIO | filters.VIDEO, self.chat_file))
 
         # photo handler
-        # self.bot.add_handler(MessageHandler(filters.PHOTO, self.chat_photo))
+        self.bot.add_handler(MessageHandler(filters.PHOTO, self.chat_photo))
 
         # normal chat messages handlers in private chat
         self.bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), self.chat_text))
@@ -70,9 +73,6 @@ class TelegramParser:
         if update.effective_chat.type == "group" or update.effective_chat.type == "supergroup":
             return
 
-        # get message
-        message = update.effective_message.text
-
         # check if user is allowed
         if not AccessManager.is_allowed(update.effective_user.id, "chat"):
             await context.bot.send_message(
@@ -80,12 +80,15 @@ class TelegramParser:
                 text = "Sorry, you are not allowed to use this bot."
             )
             return
+        
+        # get message
+        message = update.effective_message.text
 
-        # sending typing action
-        await context.bot.send_chat_action(
-            chat_id=update.effective_chat.id,
-            action="typing"
-        )
+        # FIXME: sending typing action
+        # await context.bot.send_chat_action(
+        #     chat_id=update.effective_chat.id,
+        #     action="typing"
+        # )
 
         # get response and send
         responses = await self.message_manager.get_chat_response(update.effective_user.id, message)
@@ -101,5 +104,48 @@ class TelegramParser:
                 parse_mode = 'MarkdownV2'
             )
 
+    # chat photos
+    async def chat_photo(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        # if group chat
+        if update.effective_chat.type == "group" or update.effective_chat.type == "supergroup":
+            return
+        
+        # check if user is allowed
+        if not AccessManager.is_allowed(update.effective_user.id, "chat"):
+            await context.bot.send_message(
+                chat_id = update.effective_chat.id,
+                text = "Sorry, you are not allowed to use this bot."
+            )
+            return
+        
+        # get photo url and text
+        file_id = update.effective_message.photo[-1].file_id # largest photo
+        photo_file = await context.bot.get_file(file_id)
+        photo_url = photo_file.file_path
+        text = update.effective_message.caption
+
+        # sending typing action
+        # FIXME: crash when sending two photos
+        # await context.bot.send_chat_action(
+        #     chat_id=update.effective_chat.id,
+        #     action="typing"
+        # )
+
+        response = await self.message_manager.get_vision_response(text, photo_url)
+        escaped_response = escape_markdownv2(response)
+
+        await context.bot.send_message(
+                chat_id = update.effective_chat.id,
+                text = escaped_response,
+                reply_to_message_id = update.effective_message.message_id,
+                allow_sending_without_reply = True,
+                parse_mode = 'MarkdownV2'
+            )
+
+    
     def run(self):
         self.bot.run_polling()
+
+if __name__ == "__main__":
+    my_bot = TelegramParser()
+    my_bot.run()

@@ -11,6 +11,7 @@ __status__ = Dev
 """
 
 from time import sleep
+import os, json
 
 import openai
 from datetime import datetime
@@ -21,14 +22,53 @@ from thread_manager import ThreadManager
 class OpenAIParser:
     def __init__(self):
         openai.api_key = ConfigLoader.get("openai", "api_key")
-        self.assistant = openai.beta.assistants.create(
-            name = "Chat Bot",
-            instructions = ConfigLoader.get("openai", "assistant_instructions"),
-            tools = [],
-            model = ConfigLoader.get("openai", "chat_model"),
-        )
+        if os.path.exists("./openai_assistant_id.json"):
+            with open("./openai_assistant_id.json", "r") as f:
+                assistant_id = json.load(f)
+            openai.beta.assistants.delete(assistant_id)
+            self.assistant = self._create_assistant()
+            # create_new = input("Assistant ID exists, replace? (y/n)")
+            # with open("./openai_assistant_id.json", "r") as f:
+            #     assistant_id = json.load(f)
+            # if create_new.lower() == "n":
+            #     self.assistant = openai.beta.assistants.retrieve(assistant_id)
+            # else:
+            #     openai.beta.assistants.delete(assistant_id)
+            #     self.assistant = self._create_assistant()
+        else:
+            self.assistant = self._create_assistant()
+
+        self.client = openai.OpenAI(api_key = ConfigLoader.get("openai", "api_key")) # for vision use
 
         self.thread_manager = ThreadManager()
+    
+    def get_vision_response(self, text, image_url):
+        if text is None:
+            text = "What is the image about?" # default text
+        response = self.client.chat.completions.create(
+            model = ConfigLoader.get("openai", "vision_model"),
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text", 
+                            "text": text
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": image_url,
+                                "detail": "low"
+                            }
+                        },
+                    ],
+                }
+            ],
+            max_tokens=2000
+        )
+        return response.choices[0].message.content
+
 
     def get_chat_response(self, user_id, message_text):
         # TODO: Add file support
@@ -45,12 +85,12 @@ class OpenAIParser:
             assistant_id = self.assistant.id
         )
         
-        for _ in range(ConfigLoader.get("openai", "message_timeout")):
+        for _ in range(2 * ConfigLoader.get("openai", "message_timeout")):
             run = openai.beta.threads.runs.retrieve(
                 thread_id = thread.id,
                 run_id = run.id
             )
-            sleep(1)
+            sleep(0.5)
             if run.status == "completed":
                 messages = openai.beta.threads.messages.list(
                     thread_id=thread.id
@@ -80,7 +120,16 @@ class OpenAIParser:
                 break
         return new_messages
 
-
+    def _create_assistant(self):
+        assistant = openai.beta.assistants.create(
+            name = "Chat Bot",
+            instructions = ConfigLoader.get("openai", "assistant_instructions"),
+            tools = [],
+            model = ConfigLoader.get("openai", "chat_model"),
+        )
+        with open("./openai_assistant_id.json", "w") as f:
+            json.dump(assistant.id, f)
+        return assistant
 
     def _prepare_thread(self, user_id):
         thread_id, last_used = self.thread_manager.get_thread(user_id)
