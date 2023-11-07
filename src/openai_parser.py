@@ -70,9 +70,9 @@ class OpenAIParser:
         return response.choices[0].message.content
 
 
-    def get_chat_response(self, user_id, message_text):
+    def get_chat_response(self, chat_id, message_text):
         # TODO: Add file support
-        thread = self._prepare_thread(user_id)
+        thread = self._prepare_thread(chat_id)
         message = openai.beta.threads.messages.create(
             thread_id = thread.id,
             role = "user",
@@ -99,6 +99,13 @@ class OpenAIParser:
                 return new_messages
             elif run.status == "failed" or run.status == "cancelled" or run.status == "expired":
                 break
+
+    def clear_context(self, chat_id):
+        thread_id, last_used = self.thread_manager.get_thread(chat_id)
+        if thread_id is None:
+            return
+        openai.beta.threads.delete(thread_id)
+        self.thread_manager.pop_chat(chat_id)
 
     def _parse_new_messages(self, messages):
         new_messages = []
@@ -131,18 +138,18 @@ class OpenAIParser:
             json.dump(assistant.id, f)
         return assistant
 
-    def _prepare_thread(self, user_id):
-        thread_id, last_used = self.thread_manager.get_thread(user_id)
+    def _prepare_thread(self, chat_id):
+        thread_id, last_used = self.thread_manager.get_thread(chat_id)
         if thread_id is None:
             thread = openai.beta.threads.create() # create new thread
-            self.thread_manager.set_thread_id(user_id, thread.id) # update thread id
+            self.thread_manager.set_thread_id(chat_id, thread.id) # update thread id
         elif datetime.now().timestamp() - last_used > ConfigLoader.get("openai", "thread_timeout"): # expired thread
             openai.beta.threads.delete(thread_id) # delete expried thread
             thread = openai.beta.threads.create() # create new thread
-            self.thread_manager.set_thread_id(user_id, thread.id) # update thread id
+            self.thread_manager.set_thread_id(chat_id, thread.id) # update thread id
         else:
             thread = openai.beta.threads.retrieve(thread_id) # retrieve thread
-            self.thread_manager.update_thread_last_used(user_id) # update last used
+            self.thread_manager.update_thread_last_used(chat_id) # update last used
         return thread
     
 

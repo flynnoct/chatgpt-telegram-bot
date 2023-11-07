@@ -12,33 +12,38 @@ class ThreadManager():
         else:
             self.records = {}
     
-    def create_user(self, user_id):
-        user_id = str(user_id)
-        self.records[user_id] = {"tid": None, "last_used": None}
+    def create_chat(self, chat_id):
+        chat_id = str(chat_id)
+        self.records[chat_id] = {"tid": None, "last_used": None}
+    
+    def pop_chat(self, chat_id):
+        chat_id = str(chat_id)
+        self.records.pop(chat_id)
+        self.save()
 
-    def has_user(self, user_id):
-        user_id = str(user_id)
-        return user_id in self.records
+    def has_chat(self, chat_id):
+        chat_id = str(chat_id)
+        return chat_id in self.records
 
-    def set_thread_id(self, user_id, thread_id):
-        user_id = str(user_id)
-        if not self.has_user(user_id):
-            self.create_user(user_id)
-        self.records[user_id]["tid"] = thread_id
-        self.records[user_id]["last_used"] = datetime.now().timestamp()
+    def set_thread_id(self, chat_id, thread_id):
+        chat_id = str(chat_id)
+        if not self.has_chat(chat_id):
+            self.create_chat(chat_id)
+        self.records[chat_id]["tid"] = thread_id
+        self.records[chat_id]["last_used"] = datetime.now().timestamp()
         self.save()
     
-    def update_thread_last_used(self, user_id):
-        user_id = str(user_id)
-        self.records[user_id]["last_used"] = datetime.now().timestamp()
+    def update_thread_last_used(self, chat_id):
+        chat_id = str(chat_id)
+        self.records[chat_id]["last_used"] = datetime.now().timestamp()
         self.save()
 
     # -> (thread_id, last_used)
-    def get_thread(self, user_id):
-        user_id = str(user_id)
-        if not self.has_user(user_id):
+    def get_thread(self, chat_id):
+        chat_id = str(chat_id)
+        if not self.has_chat(chat_id):
             return (None, None)
-        return (self.records[user_id]["tid"], self.records[user_id]["last_used"])
+        return (self.records[chat_id]["tid"], self.records[chat_id]["last_used"])
 
 
     def save(self):

@@ -38,7 +38,7 @@ class TelegramParser:
     def add_handlers(self):
         # command handlers
         # self.bot.add_handler(CommandHandler("start", self.cmd_start))
-        # self.bot.add_handler(CommandHandler("clear", self.cmd_clear_context))
+        self.bot.add_handler(CommandHandler("clear", self.cmd_clear_context))
         # self.bot.add_handler(CommandHandler("getid", self.cmd_get_user_id))
 
         # special message handlers
@@ -91,7 +91,7 @@ class TelegramParser:
         # )
 
         # get response and send
-        responses = await self.message_manager.get_chat_response(update.effective_user.id, message)
+        responses = await self.message_manager.get_chat_response(str(update.effective_chat.id), message)
         for response in responses:
             # FIXME: Handle Images
             if response["type"] == "text":
@@ -141,6 +141,20 @@ class TelegramParser:
                 allow_sending_without_reply = True,
                 parse_mode = 'MarkdownV2'
             )
+        
+    async def cmd_clear_context(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        # check if user is allowed
+        if not AccessManager.is_allowed(update.effective_user.id, "chat"):
+            await context.bot.send_message(
+                chat_id = update.effective_chat.id,
+                text = "Sorry, you are not allowed to use this bot."
+            )
+            return
+        self.message_manager.clear_context(str(update.effective_chat.id))
+        await context.bot.send_message(
+            chat_id = update.effective_chat.id,
+            text = "Context cleared."
+        )
 
     
     def run(self):
