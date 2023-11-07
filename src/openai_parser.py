@@ -1,145 +1,99 @@
-#!/usr/bin/python3
-# -*- coding: utf-8 -*-
-"""ChatGPT Telegram Bot
+"""OpenAI Request Parser
 
 Description to be added.
 
 __author__ = Zhiquan Wang
 __copyright__ = Copyright 2023
-__version__ = 1.2.2
+__version__ = 2.0.0
 __maintainer__ = Zhiquan Wang
-__email__ = contact@flynmail.com
+__email__ = contact@flynnoct.com
 __status__ = Dev
 """
 
-import openai, json, os
-import datetime
-import logging
-import signal
+from time import sleep
+
+import openai
+from datetime import datetime
+
 from config_loader import ConfigLoader
-from logging_manager import LoggingManager
-from helpers import num_tokens_from_messages
+from thread_manager import ThreadManager
 
 class OpenAIParser:
-
-    # config_dict = {}
-
     def __init__(self):
-
-        # load config
-        # with open("config.json") as f:
-        #     self.config_dict = json.load(f)
-        # init openai
-        # openai.organization = self.config_dict["ORGANIZATION"] if "ORGANIZATION" in self.config_dict else "Personal"
         openai.api_key = ConfigLoader.get("openai", "api_key")
-
-    async def _get_single_response(self, message):
-        response = await openai.ChatCompletion.acreate(model = ConfigLoader.get("openai", "chat_model"),
-                                                messages = [
-                                                    {"role": "system", "content": "You are a helpful assistant"},
-                                                    {"role": "user", "content": message}
-                                                    ]
-                                                )
-        return response["choices"][0]["message"]["content"]
-
-    async def get_response(self, userid, context_messages):
-        LoggingManager.debug("Get OpenAI GPT response for user: %s" % userid, "OpenAIParser")
-        # context_messages.insert(0, {"role": "system", "content": "You are a helpful assistant"})
-        try:
-
-            def timeout_handler(signum, frame):
-                raise Exception("Timeout")
-            signal.signal(signal.SIGALRM, timeout_handler)
-            signal.alarm(int(ConfigLoader.get("openai", "api_timeout")))
-            #### Timer ####
-            response = await openai.ChatCompletion.acreate(
-                model = ConfigLoader.get("openai", "chat_model"),
-                messages = context_messages
-                )
-            ###############
-            signal.alarm(0)
-            return (response["choices"][0]["message"]["content"], response["usage"]["total_tokens"])
-        except Exception as e:
-            LoggingManager.error("OpenAI GPT request for user %s with error: %s" % (userid, str(e)), "OpenAIParser")
-            return ("Oops, something went wrong with OpenAI. Please try again later.", 0)
-
-    async def get_response_in_stream(self, userid, chat_id, original_message_id, context_messages, send_message_callback, edit_message_callback):
-        LoggingManager.debug("Get OpenAI GPT response in stream for user: %s" % userid, "OpenAIParser")
-        response = await openai.ChatCompletion.acreate(
+        self.assistant = openai.beta.assistants.create(
+            name = "Chat Bot",
+            instructions = ConfigLoader.get("openai", "assistant_instructions"),
+            tools = [],
             model = ConfigLoader.get("openai", "chat_model"),
-            messages = context_messages,
-            stream = True
+        )
+
+        self.thread_manager = ThreadManager()
+
+    def get_chat_response(self, user_id, message_text):
+        # TODO: Add file support
+        thread = self._prepare_thread(user_id)
+        message = openai.beta.threads.messages.create(
+            thread_id = thread.id,
+            role = "user",
+            content = message_text
+        )
+    
+        # TODO: Implement instructions
+        run = openai.beta.threads.runs.create(
+            thread_id = thread.id,
+            assistant_id = self.assistant.id
+        )
+        
+        for _ in range(ConfigLoader.get("openai", "message_timeout")):
+            run = openai.beta.threads.runs.retrieve(
+                thread_id = thread.id,
+                run_id = run.id
             )
-        collected_messages = ""
-        response_message_id = ""
-        first_chunk = True
-        increased_len = 0
-        async for chunk in response:
-            chunk_delta = chunk['choices'][0]['delta']
-            chunk_finish_reason = chunk['choices'][0]['finish_reason']
-            if chunk_finish_reason == "stop":
-                if first_chunk:
-                    await send_message_callback(
-                        collected_messages,
-                        chat_id,
-                        original_message_id,
-                        finished = True
-                        )
-                else:
-                    await edit_message_callback(
-                        collected_messages,
-                        chat_id,
-                        response_message_id,
-                        finished = True
-                        )
-                context_messages.append({"role": "assistant", "content": collected_messages})
-                token_used = num_tokens_from_messages(context_messages, ConfigLoader.get("openai", "chat_model"))
-                return (collected_messages, token_used)
+            sleep(1)
+            if run.status == "completed":
+                messages = openai.beta.threads.messages.list(
+                    thread_id=thread.id
+                )
+                new_messages = self._parse_new_messages(messages)
+                return new_messages
+            elif run.status == "failed" or run.status == "cancelled" or run.status == "expired":
+                break
+
+    def _parse_new_messages(self, messages):
+        new_messages = []
+        for message in messages.data:
+            if message.role == "assistant":
+                assert len(message.content) == 1
+                content = message.content[0]
+                if content.type == "text":
+                    text = content.text.value
+                    for annotation in content.text.annotations:
+                        if annotation["type"] == "file_citation":
+                            pass #FIXME
+                        if annotation["type"] == "file_path":
+                            pass #FIXME
+                elif content.type == "image_file":
+                    pass #FIXME
+                new_messages.append({"type": "text", "value": text})
             else:
-                if "content" in chunk_delta:
-                    increased_len += 1
-                    collected_messages += chunk_delta["content"]
-                    if first_chunk and increased_len > 32:
-                        first_chunk = False
-                        response_message_id = await send_message_callback(
-                            collected_messages,
-                            chat_id,
-                            original_message_id
-                            )
-                        increased_len = 0
-                    elif increased_len > 64:
-                        await edit_message_callback(
-                            collected_messages,
-                            chat_id,
-                            response_message_id,
-                            )
-                        increased_len = 0
-        # TODO: handle usage and timeout
-        context_messages.append({"role": "assistant", "content": collected_messages})
-        token_used = num_tokens_from_messages(context_messages, ConfigLoader.get("openai", "chat_model"))
-        return (collected_messages, token_used)
+                break
+        return new_messages
 
 
-    def speech_to_text(self, userid, audio_file):
-        LoggingManager.debug("Get OpenAI Speech to Text for user: %s" % userid, "OpenAIParser")
-        # transcript = openai.Audio.transcribe("whisper-1", audio_file, language="zh")
-        try:
-            transcript = openai.Audio.transcribe("whisper-1", audio_file)
-        except Exception as e:
-            LoggingManager.error("OpenAI Speech to Text request for user %s with error: %s" % (userid, str(e)), "OpenAIParser")
-            return ""
-        return transcript["text"]
 
-    def image_generation(self, userid, prompt):
-        LoggingManager.debug("Get OpenAI Image Generation for user: %s" % userid, "OpenAIParser")
-        response = openai.Image.create(prompt = prompt, n=1, size = "512x512", user = userid)
-        image_url = response["data"][0]["url"]
-        # for debug use
-        # image_url = "https://catdoctorofmonroe.com/wp-content/uploads/2020/09/iconfinder_cat_tied_275717.png"
-        usage = 1 # reserve for future use
-        return (image_url, usage)
+    def _prepare_thread(self, user_id):
+        thread_id, last_used = self.thread_manager.get_thread(user_id)
+        if thread_id is None:
+            thread = openai.beta.threads.create() # create new thread
+            self.thread_manager.set_thread_id(user_id, thread.id) # update thread id
+        elif datetime.now().timestamp() - last_used > ConfigLoader.get("openai", "thread_timeout"): # expired thread
+            openai.beta.threads.delete(thread_id) # delete expried thread
+            thread = openai.beta.threads.create() # create new thread
+            self.thread_manager.set_thread_id(user_id, thread.id) # update thread id
+        else:
+            thread = openai.beta.threads.retrieve(thread_id) # retrieve thread
+            self.thread_manager.update_thread_last_used(user_id) # update last used
+        return thread
+    
 
-if __name__ == "__main__":
-    openai_parser = OpenAIParser()
-    # print(openai_parser._get_single_response("Tell me a joke."))
-    print(openai_parser.get_response("123", [{"role": "system", "content": "You are a cat and only can say Meaw"}, {"role": "user", "content": "Say something to me."}]))
