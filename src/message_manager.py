@@ -14,3 +14,6 @@ class MessageManager:
 
     def clear_context(self, chat_id):
         self.openai_parser.clear_context(chat_id)
+
+    def get_generated_image_url(self, prompt, num=1):
+        return self.openai_parser.get_generated_image_url(prompt, num)

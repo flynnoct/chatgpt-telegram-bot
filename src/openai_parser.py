@@ -42,6 +42,21 @@ class OpenAIParser:
 
         self.thread_manager = ThreadManager()
     
+    def get_generated_image_url(self, prompt, num):
+
+        response = openai.images.generate(
+            model = ConfigLoader.get("openai", "image_generation", "model"),
+            prompt = prompt,
+            n = num, # works only for dalle2
+            size = ConfigLoader.get("openai", "image_generation", "size"),
+            quality = ConfigLoader.get("openai", "image_generation", "quality"),
+            )
+        image_url = response.data[0].url
+        # for debug use
+        # image_url = "https://catdoctorofmonroe.com/wp-content/uploads/2020/09/iconfinder_cat_tied_275717.png"
+        return image_url
+
+
     def get_vision_response(self, text, image_url):
         if text is None:
             text = "What is the image about?" # default text

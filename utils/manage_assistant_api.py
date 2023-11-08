@@ -18,8 +18,7 @@ def list_threads(openai_api_key):
     print(thread)
 
 if __name__ == "__main__":
-    # key = input("OpenAI API Key: ")
-    key = "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"
+    key = input("OpenAI API Key: ")
     # list_threads(key)
     # delete_all_assistants(key)
     list_assistants(key)

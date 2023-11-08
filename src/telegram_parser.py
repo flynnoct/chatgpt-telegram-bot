@@ -44,8 +44,8 @@ class TelegramParser:
         # special message handlers
         # if ConfigLoader.get("voice_message", "enable_voice"):
         #     self.bot.add_handler(MessageHandler(filters.VOICE, self.chat_voice))
-        # if ConfigLoader.get("image_generation", "enable_image_generation"):
-        #     self.bot.add_handler(CommandHandler("dalle", self.cmd_image_generation))
+        if ConfigLoader.get("openai", "image_generation", "enabled"):
+            self.bot.add_handler(CommandHandler("dalle", self.cmd_image_generation))
         # if ConfigLoader.get("openai", "enable_custom_system_role"):
         #     self.bot.add_handler(CommandHandler("role", self.cmd_set_system_role))
 
@@ -140,6 +140,45 @@ class TelegramParser:
                 reply_to_message_id = update.effective_message.message_id,
                 allow_sending_without_reply = True,
                 parse_mode = 'MarkdownV2'
+            )
+    
+    # image_generation command, aka DALLE
+    async def cmd_image_generation(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+        # check if user is allowed
+        if not AccessManager.is_allowed(update.effective_user.id, "image_generation"):
+            await context.bot.send_message(
+                chat_id = update.effective_chat.id,
+                text = "Sorry, you are not allowed to use this bot to generate images."
+            )
+            return
+        
+        # remove dalle command from message
+        # message = update.effective_message.text.replace("/dalle", "")
+        message = " ".join(context.args)
+
+        # send prompt to openai image generation and get image url
+        image_url = self.message_manager.get_generated_image_url(
+            message,
+            num = 1
+            )
+
+        if image_url is None:
+            await context.bot.send_message(
+                chat_id = update.effective_chat.id,
+                text = "Please try again later."
+            )
+
+        else:
+            # sending typing action
+            await context.bot.send_chat_action(
+                chat_id=update.effective_chat.id,
+                action="upload_document"
+            )
+            # send file to user
+            await context.bot.send_document(
+                chat_id=update.effective_chat.id,
+                document=image_url
             )
         
     async def cmd_clear_context(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
