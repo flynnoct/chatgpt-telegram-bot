@@ -58,6 +58,7 @@ class TelegramMessageParser:
     def add_handlers(self):
         # command handlers
         self.bot.add_handler(CommandHandler("start", self.cmd_start))
+        self.bot.add_handler(CommandHandler("toggle_no_context_mode", self.cmd_toggle_no_context_mode))
         self.bot.add_handler(CommandHandler("clear", self.cmd_clear_context))
         self.bot.add_handler(CommandHandler("getid", self.cmd_get_user_id))
 
@@ -506,6 +507,49 @@ class TelegramMessageParser:
             text="Sorry, I can't handle files and photos yet."
         )
 
+    # toggle_no_context_mode command
+    async def cmd_toggle_no_context_mode(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        LoggingManager.debug("User %s is toggling no context mode" % str(update.effective_user.id), "TelegramMessageParser")
+
+        # check if user is allowed
+        allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
+        if not allowed:
+            await context.bot.send_message(
+                chat_id = update.effective_chat.id,
+                text = "Sorry, you are not allowed to use this bot."
+            )
+            return
+
+        target_state = str(context.args[0]).lower()
+
+        if target_state == "on" or target_state == "true" or target_state == "1":
+            # turn no context mode ON
+            target_state = True 
+        elif target_state == "off" or target_state == "false" or target_state == "0":
+            # turn no context mode OFF
+            target_state = False
+        else:
+            # just toggle no context mode
+            target_state = None
+            
+        result = await self.message_manager.toggle_no_context_mode(
+            update.effective_chat.id,
+            update.effective_user.id, 
+            target_state
+        )
+
+        # send feedback to user
+        if result:
+            feedback_message = "🟢💭 *No\-context\-mode is ON\.*\nI won't remember previous messages\."
+        else:
+            feedback_message = "🔴💭 *No\-context\-mode is OFF\.*\nI will keep our conversation in mind, but not on server\! 🙅"
+        await context.bot.send_message(
+            chat_id = update.effective_chat.id,
+            text = feedback_message,
+            parse_mode = "MarkdownV2"
+        )
+
+
     # start command
     async def cmd_start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         LoggingManager.info("Get a start command from user: %s" % str(update.effective_user.id), "TelegramMessageParser")
@@ -528,7 +572,7 @@ class TelegramMessageParser:
         LoggingManager.debug("Context cleared for user: %s" % str(update.effective_user.id), "TelegramMessageParser")
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="Context cleared."
+            text="💬 Context cleared."
         )
 
     # get user id command

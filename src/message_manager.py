@@ -43,7 +43,10 @@ class MessageManager:
             self.__userDict[str_id].update(t, answer, "assistant")
             self.__access_manager.update_usage_info(str_user, usage, "chat")
           
-        return answer
+        return {"no_context_mode": __get_no_context_mode_param(str_id), "response":answer}
+
+    async def __get_no_context_mode_param(self, str_id):
+        return self.__userDict[str_id].no_context_mode
 
     async def get_response(self, chat_id, user_id, message, is_voice = False):
         LoggingManager.debug("Get response for user: %s" % str(user_id), "MessageManager")
@@ -72,11 +75,11 @@ class MessageManager:
             self.__access_manager.update_usage_info(str_user, usage, "chat")
           
         return answer
-
-    def clear_context(self, id):
+    
+        def clear_context(self, id):
         LoggingManager.debug("Clear context for user: %s" % id, "MessageManager")
         try:
-            self.__userDict[id].clear_context(time.time())
+            self.__userDict[id].clear_all(time.time())
         except Exception as e:
             print(e)
 
@@ -119,6 +122,18 @@ class MessageManager:
             self.__access_manager.update_usage_info(str_user, usage, "chat")
 
         return answer
+    
+    async def toggle_no_context_mode(self, chat_id, user_id, target_mode):
+        LoggingManager.debug("Toggle no context mode for chat: %s" % str(user_id), "MessageManager")
+        t = time.time()
+        str_id = str(chat_id)
+        if str_id not in self.__userDict:
+            self.__userDict[str_id] = ChatSession(t)  
+            
+        async with self.__userDict[str_id].lock:     
+            mode = await self.__userDict[str_id].toggle_no_context_mode(t, target_mode)   
+
+        return mode
     
     async def __sendMessage(self, user, messageList):
         ans = await self.__openai_parser.get_response(user, messageList)
