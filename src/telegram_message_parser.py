@@ -520,7 +520,8 @@ class TelegramMessageParser:
             )
             return
 
-        target_state = str(context.args[0]).lower()
+        
+        target_state = str(context.args[0]).lower() if len(context.args) > 0 else None
 
         if target_state == "on" or target_state == "true" or target_state == "1":
             # turn no context mode ON

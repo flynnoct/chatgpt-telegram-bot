@@ -43,9 +43,9 @@ class MessageManager:
             self.__userDict[str_id].update(t, answer, "assistant")
             self.__access_manager.update_usage_info(str_user, usage, "chat")
           
-        return {"no_context_mode": __get_no_context_mode_param(str_id), "response":answer}
+        return {"no_context_mode": self.__get_no_context_mode_param(str_id), "response":answer}
 
-    async def __get_no_context_mode_param(self, str_id):
+    def __get_no_context_mode_param(self, str_id):
         return self.__userDict[str_id].no_context_mode
 
     async def get_response(self, chat_id, user_id, message, is_voice = False):
@@ -76,7 +76,7 @@ class MessageManager:
           
         return answer
     
-        def clear_context(self, id):
+    def clear_context(self, id):
         LoggingManager.debug("Clear context for user: %s" % id, "MessageManager")
         try:
             self.__userDict[id].clear_all(time.time())
