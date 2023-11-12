@@ -59,6 +59,7 @@ class TelegramMessageParser:
         # command handlers
         self.bot.add_handler(CommandHandler("start", self.cmd_start))
         self.bot.add_handler(CommandHandler("toggle_no_context_mode", self.cmd_toggle_no_context_mode))
+        self.bot.add_handler(CommandHandler("continue_chat", self.cmd_continue_chat))
         self.bot.add_handler(CommandHandler("clear", self.cmd_clear_context))
         self.bot.add_handler(CommandHandler("getid", self.cmd_get_user_id))
 
@@ -558,6 +559,24 @@ class TelegramMessageParser:
             chat_id=update.effective_chat.id,
             text="Hello, I'm a ChatGPT bot."
         )
+
+    # continue_chat command
+    async def cmd_continue_chat(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        LoggingManager.info("Get a continue chat command from user: %s" % str(update.effective_user.id), "TelegramMessageParser")
+        allowed, _ = self.access_manager.check_user_allowed(str(update.effective_user.id))
+        if not allowed:
+            await context.bot.send_message(
+                chat_id = update.effective_chat.id,
+                text = "Sorry, you are not allowed to use this bot."
+            )
+            return
+        self.message_manager.continue_chat(str(update.effective_chat.id), str(update.effective_user.id))
+        LoggingManager.debug("Context continued for user: %s" % str(update.effective_user.id), "TelegramMessageParser")
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="💬 Context continued."
+        )
+
 
     # clear context command
     async def cmd_clear_context(self, update: Update, context: ContextTypes.DEFAULT_TYPE):

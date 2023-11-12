@@ -51,6 +51,9 @@ class ChatSession:
     def unset_voice(self):
         self.__system_role = self.__system_role.replace("Your response will be converted to speech, so please keep your response concise and use language that mimics human speech. ", "")     
         
+    def continue_chat(self, time):
+        self.__latestTime = time
+
     def clear_context(self, clear_time):
         self.__latestTime = clear_time
         self.__messageList.clear()

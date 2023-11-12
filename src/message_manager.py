@@ -75,6 +75,18 @@ class MessageManager:
             self.__access_manager.update_usage_info(str_user, usage, "chat")
           
         return answer
+
+    def continue_chat(self, chat_id, user_id):
+        LoggingManager.debug("Continue chat for user: %s" % str(user_id), "MessageManager")
+        t = time.time()
+        str_id = str(chat_id)
+        str_user = str(user_id)
+        if str_id not in self.__userDict:
+            # new user
+            self.__userDict[str_id] = ChatSession(t)
+        self.__userDict[str_id].continue_chat(t) 
+         
+        return
     
     def clear_context(self, id):
         LoggingManager.debug("Clear context for user: %s" % id, "MessageManager")
