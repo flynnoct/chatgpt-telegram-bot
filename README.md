@@ -4,10 +4,8 @@
 
 ## 🎉 News
 
-- **System Role customization** is now supported! Users can customize their own Bot's character and tone!
-- **Update the config.json file through command line** is now supported.
-- **Logging system** is completed for debug purpose.
-- **Telegram Inline Mode (Beta)** is now supported! You can ask @BotFather to enable **both inline mode & inline feedback to 100%** for your Bot and use it in any private chat with a contact and group chat (even without inviting the bot as a member).
+- **Continue Chat** is an important function for the bot. No matter how long you've been away, a simple click is all it takes to pick up right where you left off in the conversation. Say goodbye to the frustration of repeating yourself and hello to seamless, uninterrupted dialogue with your bot!
+- **No Context Mode**. To better save tokens, we have introduced our "no context mode" which makes each conversation with the ChatGPT a separate session. Opt for this when you have no need for context memory, as it will effectively save you **money**.
 
 ## 🐱 Introduction
 
@@ -27,6 +25,10 @@ The Telegram Bot features the following functions:
 - **DALL·E, the Image Generation AI Model**. Send a short prompt to the Bot and get your own painting!
 - **Whisper, the Intelligent Speech Recognizer**. The Bot can read your voice messages!
 - **Comprehensive privacy protection**. The Bot is unable (and of course we won't) to collect any message in group chat except user prompts.
+- **System Role customization** is now supported! Users can customize their own Bot's character and tone!
+- **Update the config.json file through command line** is now supported.
+- **Logging system** is completed for debug purpose.
+- **Telegram Inline Mode (Beta)** is now supported! You can ask @BotFather to enable **both inline mode & inline feedback to 100%** for your Bot and use it in any private chat with a contact and group chat (even without inviting the bot as a member).
 
 Additonal features:
 
@@ -54,6 +56,8 @@ In a group chat, use the `/chat` to invoke the Bot. It will not collect any othe
 - `/dalle <prompt>`: Ask DALL·E for a painting based on your prompt.
 - `/clear`: Clear the conversation context.
 - `/getid`: Get your Telegram user ID.
+- `/continue_chat`: Continue your previous conversation even if the session has expired.
+- `/toggle_no_context_mode`: toggle between context memory and no context memory. You can specify the mode to switch to, or simply switch to the alternate mode.
 
 ## 👷 Deploy Your Own
 

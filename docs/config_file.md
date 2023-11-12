@@ -6,8 +6,8 @@ This documentation is for users who are unfamilar with JSON file and have troubl
 
 Follow below procedures to modify your `config.json`:
 
-1. Replace the `telegram_token` and `openai_api_key` with your own.
-2. Add allowed users to the `allowed_users` list. You can get your user id by sending `/start` to [@userinfobot](https://t.me/userinfobot) or send `/getid` to the Bot (after you start it).
+1. Replace the `telegram.bot_token` and `openai.api_key` with your own.
+2. Add allowed users to the `allowed_users` list. You can get your user id by sending `/start` to [@userinfobot](https://t.me/userinfobot) or sending `/getid` to the Bot (after you start it).
 
 > Note: the user ID is a series of numbers, you should add it to the `allowed_users` list as a string (add quotation marks around it).
 
