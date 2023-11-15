@@ -152,6 +152,7 @@ class MessageManager:
         return ans
         
     async def __sendMessage_in_stream(self, chat_id, user_id, message_id, messageList, chat_text_first_chunk_callback, chat_text_append_chunks_callback):
+        print(messageList)
         ans = await self.__openai_parser.get_response_in_stream(user_id, chat_id, message_id, messageList, chat_text_first_chunk_callback, chat_text_append_chunks_callback)
         return ans
     

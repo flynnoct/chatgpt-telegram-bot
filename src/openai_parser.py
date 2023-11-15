@@ -93,7 +93,9 @@ class OpenAIParser:
                         finished = True
                         )
                 context_messages.append({"role": "assistant", "content": collected_messages})
-                token_used = num_tokens_from_messages(context_messages, ConfigLoader.get("openai", "chat_model"))
+                # token_used = num_tokens_from_messages(context_messages, ConfigLoader.get("openai", "chat_model"))
+                # because num_tokens is not supported in gpt-4-turbo
+                token_used = 0
                 return (collected_messages, token_used)
             else:
                 if "content" in chunk_delta:
@@ -116,7 +118,9 @@ class OpenAIParser:
                         increased_len = 0
         # TODO: handle usage and timeout
         context_messages.append({"role": "assistant", "content": collected_messages})
-        token_used = num_tokens_from_messages(context_messages, ConfigLoader.get("openai", "chat_model"))
+        # token_used = num_tokens_from_messages(context_messages, ConfigLoader.get("openai", "chat_model"))
+        # because num_tokens is not supported in gpt-4-turbo
+        token_used = 0
         return (collected_messages, token_used)
 
 
