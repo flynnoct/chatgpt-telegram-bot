@@ -134,9 +134,10 @@ class TelegramMessageParser:
                         allow_sending_without_reply = True
                     )
             else:
+                escaped_response_message = escape_markdownv2(response_message)
                 message = await context.bot.send_message(
                     chat_id = chat_id,
-                    text = response_message,
+                    text = escaped_response_message,
                     reply_to_message_id = original_message_id,
                     allow_sending_without_reply = True,
                     parse_mode = 'MarkdownV2'
@@ -162,13 +163,14 @@ class TelegramMessageParser:
                     await context.bot.edit_message_text(
                         chat_id = chat_id,
                         message_id = response_message_id,
-                        text = escaped_response_message
+                        text = response_message
                     )
             else:
+                escaped_response_message = escape_markdownv2(response_message)
                 await context.bot.edit_message_text(
                     chat_id = chat_id,
                     message_id = response_message_id,
-                    text = response_message,
+                    text = escaped_response_message,
                     parse_mode = 'MarkdownV2'
                 )
 
@@ -230,9 +232,10 @@ class TelegramMessageParser:
                         allow_sending_without_reply = True
                     )
             else:
+                escaped_response_message = escape_markdownv2(response_message)
                 message = await context.bot.send_message(
                     chat_id = chat_id,
-                    text = response_message,
+                    text = escaped_response_message,
                     reply_to_message_id = original_message_id,
                     allow_sending_without_reply = True,
                     parse_mode = 'MarkdownV2'
@@ -258,13 +261,14 @@ class TelegramMessageParser:
                     await context.bot.edit_message_text(
                         chat_id = chat_id,
                         message_id = response_message_id,
-                        text = escaped_response_message
+                        text = response_message
                     )
             else:
+                escaped_response_message = escape_markdownv2(response_message)
                 await context.bot.edit_message_text(
                     chat_id = chat_id,
                     message_id = response_message_id,
-                    text = response_message,
+                    text = escaped_response_message,
                     parse_mode = 'MarkdownV2'
                 )
                 
