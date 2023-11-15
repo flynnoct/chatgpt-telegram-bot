@@ -13,7 +13,7 @@ __status__ = Dev
 from time import sleep
 import os, json
 
-import openai
+from openai import OpenAI
 from datetime import datetime
 
 from config_loader import ConfigLoader as CL
@@ -21,7 +21,7 @@ from thread_manager import ThreadManager
 
 class OpenAIParser:
     def __init__(self):
-        self.client = openai.OpenAI(api_key = CL.get("openai", "api_key"))
+        self.client = OpenAI(api_key = CL.get("openai", "api_key"))
         if not CL.get("openai", "assistant_id") is None: # if assistant_id is set, use it
             self.assistant = self.client.beta.assistants.retrieve(CL.get("openai", "assistant_id"))
         else:
@@ -38,7 +38,7 @@ class OpenAIParser:
     
     def get_generated_image_url(self, prompt, num):
 
-        response = openai.images.generate(
+        response = self.client.images.generate(
             model = CL.get("openai", "image_generation", "model"),
             prompt = prompt,
             n = num, # works only for dalle2
@@ -82,26 +82,26 @@ class OpenAIParser:
     def get_chat_response(self, chat_id, message_text):
         # TODO: Add file support
         thread = self._prepare_thread(chat_id)
-        message = openai.beta.threads.messages.create(
+        message = self.client.beta.threads.messages.create(
             thread_id = thread.id,
             role = "user",
             content = message_text
         )
     
         # TODO: Implement instructions
-        run = openai.beta.threads.runs.create(
+        run = self.client.beta.threads.runs.create(
             thread_id = thread.id,
             assistant_id = self.assistant.id
         )
         
         for _ in range(2 * CL.get("openai", "message_timeout")):
-            run = openai.beta.threads.runs.retrieve(
+            run = self.client.beta.threads.runs.retrieve(
                 thread_id = thread.id,
                 run_id = run.id
             )
             sleep(0.5)
             if run.status == "completed":
-                messages = openai.beta.threads.messages.list(
+                messages = self.client.beta.threads.messages.list(
                     thread_id=thread.id
                 )
                 new_messages = self._parse_new_messages(messages)
@@ -113,7 +113,7 @@ class OpenAIParser:
         thread_id, last_used = self.thread_manager.get_thread(chat_id)
         if thread_id is None:
             return
-        openai.beta.threads.delete(thread_id)
+        self.client.beta.threads.delete(thread_id)
         self.thread_manager.pop_chat(chat_id)
 
     def _parse_new_messages(self, messages):
@@ -139,14 +139,14 @@ class OpenAIParser:
     def _prepare_thread(self, chat_id):
         thread_id, last_used = self.thread_manager.get_thread(chat_id)
         if thread_id is None:
-            thread = openai.beta.threads.create() # create new thread
+            thread = self.client.beta.threads.create() # create new thread
             self.thread_manager.set_thread_id(chat_id, thread.id) # update thread id
         elif datetime.now().timestamp() - last_used > CL.get("openai", "thread_timeout"): # expired thread
-            openai.beta.threads.delete(thread_id) # delete expried thread
-            thread = openai.beta.threads.create() # create new thread
+            self.client.beta.threads.delete(thread_id) # delete expried thread
+            thread = self.client.beta.threads.create() # create new thread
             self.thread_manager.set_thread_id(chat_id, thread.id) # update thread id
         else:
-            thread = openai.beta.threads.retrieve(thread_id) # retrieve thread
+            thread = self.client.beta.threads.retrieve(thread_id) # retrieve thread
             self.thread_manager.update_thread_last_used(chat_id) # update last used
         return thread
     

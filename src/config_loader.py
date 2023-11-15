@@ -41,9 +41,7 @@ class ConfigLoader:
         try:
             result = reduce(lambda d, key: d[key], keys, ConfigLoader._config)
         except KeyError:
-            with open("config.json.template", "r") as f:
-                config_dict_template = json.load(f)
-            result = reduce(lambda d, key: d[key], keys, config_dict_template)
+            result = None
         return result
 
 if __name__ == '__main__':
