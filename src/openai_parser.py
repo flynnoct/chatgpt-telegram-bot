@@ -16,40 +16,34 @@ import os, json
 import openai
 from datetime import datetime
 
-from config_loader import ConfigLoader
+from config_loader import ConfigLoader as CL
 from thread_manager import ThreadManager
 
 class OpenAIParser:
     def __init__(self):
-        openai.api_key = ConfigLoader.get("openai", "api_key")
-        if os.path.exists("./openai_assistant_id.json"):
-            with open("./openai_assistant_id.json", "r") as f:
-                assistant_id = json.load(f)
-            openai.beta.assistants.delete(assistant_id)
-            self.assistant = self._create_assistant()
-            # create_new = input("Assistant ID exists, replace? (y/n)")
-            # with open("./openai_assistant_id.json", "r") as f:
-            #     assistant_id = json.load(f)
-            # if create_new.lower() == "n":
-            #     self.assistant = openai.beta.assistants.retrieve(assistant_id)
-            # else:
-            #     openai.beta.assistants.delete(assistant_id)
-            #     self.assistant = self._create_assistant()
+        self.client = openai.OpenAI(api_key = CL.get("openai", "api_key"))
+        if not CL.get("openai", "assistant_id") is None: # if assistant_id is set, use it
+            self.assistant = self.client.beta.assistants.retrieve(CL.get("openai", "assistant_id"))
         else:
-            self.assistant = self._create_assistant()
-
-        self.client = openai.OpenAI(api_key = ConfigLoader.get("openai", "api_key")) # for vision use
+            # with open("./src/openai_tools.json", "r") as f:
+            #     tools = json.load(f)
+            self.assistant = self.client.beta.assistants.create(
+                name="Telesage",
+                instructions = "You are an assistant helping people with their problems. Your response text will be parsed as Markdown format, so please ensure your text output is in standard Markdown.",
+                model = CL.get("openai", "model"),
+                # tools = tools
+            )
 
         self.thread_manager = ThreadManager()
     
     def get_generated_image_url(self, prompt, num):
 
         response = openai.images.generate(
-            model = ConfigLoader.get("openai", "image_generation", "model"),
+            model = CL.get("openai", "image_generation", "model"),
             prompt = prompt,
             n = num, # works only for dalle2
-            size = ConfigLoader.get("openai", "image_generation", "size"),
-            quality = ConfigLoader.get("openai", "image_generation", "quality"),
+            size = CL.get("openai", "image_generation", "size"),
+            quality = CL.get("openai", "image_generation", "quality"),
             )
         image_url = response.data[0].url
         # for debug use
@@ -61,7 +55,7 @@ class OpenAIParser:
         if text is None:
             text = "What is the image about?" # default text
         response = self.client.chat.completions.create(
-            model = ConfigLoader.get("openai", "vision_model"),
+            model = CL.get("openai", "vision_model"),
             messages=[
                 {
                     "role": "user",
@@ -100,7 +94,7 @@ class OpenAIParser:
             assistant_id = self.assistant.id
         )
         
-        for _ in range(2 * ConfigLoader.get("openai", "message_timeout")):
+        for _ in range(2 * CL.get("openai", "message_timeout")):
             run = openai.beta.threads.runs.retrieve(
                 thread_id = thread.id,
                 run_id = run.id
@@ -142,23 +136,12 @@ class OpenAIParser:
                 break
         return new_messages
 
-    def _create_assistant(self):
-        assistant = openai.beta.assistants.create(
-            name = "Chat Bot",
-            instructions = ConfigLoader.get("openai", "assistant_instructions"),
-            tools = [],
-            model = ConfigLoader.get("openai", "chat_model"),
-        )
-        with open("./openai_assistant_id.json", "w") as f:
-            json.dump(assistant.id, f)
-        return assistant
-
     def _prepare_thread(self, chat_id):
         thread_id, last_used = self.thread_manager.get_thread(chat_id)
         if thread_id is None:
             thread = openai.beta.threads.create() # create new thread
             self.thread_manager.set_thread_id(chat_id, thread.id) # update thread id
-        elif datetime.now().timestamp() - last_used > ConfigLoader.get("openai", "thread_timeout"): # expired thread
+        elif datetime.now().timestamp() - last_used > CL.get("openai", "thread_timeout"): # expired thread
             openai.beta.threads.delete(thread_id) # delete expried thread
             thread = openai.beta.threads.create() # create new thread
             self.thread_manager.set_thread_id(chat_id, thread.id) # update thread id
