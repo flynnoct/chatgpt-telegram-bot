@@ -139,6 +139,7 @@ class TelegramMessageParser:
                     text = response_message,
                     reply_to_message_id = original_message_id,
                     allow_sending_without_reply = True,
+                    parse_mode = 'MarkdownV2'
                 )
                 message_id = message.message_id
                 return message_id
@@ -167,7 +168,8 @@ class TelegramMessageParser:
                 await context.bot.edit_message_text(
                     chat_id = chat_id,
                     message_id = response_message_id,
-                    text = response_message
+                    text = response_message,
+                    parse_mode = 'MarkdownV2'
                 )
 
         # send message to openai & reply response to user
@@ -233,6 +235,7 @@ class TelegramMessageParser:
                     text = response_message,
                     reply_to_message_id = original_message_id,
                     allow_sending_without_reply = True,
+                    parse_mode = 'MarkdownV2'
                 )
                 message_id = message.message_id
                 return message_id
@@ -261,7 +264,8 @@ class TelegramMessageParser:
                 await context.bot.edit_message_text(
                     chat_id = chat_id,
                     message_id = response_message_id,
-                    text = response_message
+                    text = response_message,
+                    parse_mode = 'MarkdownV2'
                 )
                 
         # reply response to user
