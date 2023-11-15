@@ -156,7 +156,8 @@ class TelegramMessageParser:
                         text = escaped_response_message,
                         parse_mode = 'MarkdownV2'
                     )
-                except:
+                except Exception as e:
+                    print(e)
                     LoggingManager.warning("Failed to parse message in MarkdownV2, using plain text instead.", "TelegramMessageParser")
                     await context.bot.edit_message_text(
                         chat_id = chat_id,
