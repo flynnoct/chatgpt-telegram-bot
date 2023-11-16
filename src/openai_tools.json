@@ -1,0 +1,20 @@
+[
+    {
+        "type": "code_interpreter"
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "new_thread",
+            "description": "Create a new thread when the user EXPLICITLY wants to delete conversation history or when the user wants to start a new conversation.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "dummy_property": {
+                        "type": "null"
+                    }
+                }
+            }
+        }
+    }
+]

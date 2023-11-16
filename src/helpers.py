@@ -18,9 +18,11 @@ def escape_markdownv2(text):
         r'\|': '|',     # spoiler
         # unicode emoji or other future chars can be easy added here
     }
+
+    md_str = md_str.replace('\`\`\`', '```')
     
     # Process each replacement sequentially
-    for original, replacement in replacements.items():
-        md_str = md_str.replace(original, replacement)
+    # for original, replacement in replacements.items():
+    #     md_str = md_str.replace(original, replacement)
         
     return md_str

@@ -14,6 +14,7 @@ __status__ = Dev
 
 import asyncio
 import random
+import io
 
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, InlineQueryHandler, ChosenInlineResultHandler, ContextTypes, filters
@@ -56,11 +57,11 @@ class TelegramParser:
 
         # self.bot.add_handler(MessageHandler(filters.AUDIO | filters.VIDEO, self.chat_file))
 
-        # photo handler
+        # photo handler, handled with vision GPT
         self.bot.add_handler(MessageHandler(filters.PHOTO, self.chat_photo))
 
         # normal chat messages handlers in private chat
-        self.bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), self.chat_text))
+        self.bot.add_handler(MessageHandler((filters.TEXT | filters.Document.ALL) & (~filters.COMMAND), self.chat))
         # normal message handlers in group chat
         # self.bot.add_handler(CommandHandler("chat", self.cmd_chat_text))
 
@@ -68,7 +69,76 @@ class TelegramParser:
         # self.bot.add_handler(MessageHandler(filters.COMMAND, self.cmd_unknown))
 
     # normal chat messages
-    async def chat_text(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def chat(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        
+        # def reply_callback
+        async def reply_callback(responses):
+            for response_message in responses:
+                for content in response_message:
+                    # if it's a text message
+                    if content["type"] == "text":
+                        text_value = content["text_value"]
+                        response_files = []
+                        # file paths
+                        annotations = content["annotations"]["file_path"]
+                        for annotation in annotations:
+                            response_files.append({
+                                "file_name": annotation["file_name"], 
+                                "file_content": io.BytesIO(annotation["file_content"]),
+                                "placeholder_text": annotation["placeholder_text"]
+                                })
+                        # file citations
+                        annotations = content["annotations"]["file_citation"]
+                        for annotation in annotations:
+                            pass # TODO: add citation
+                        # send message
+                        if len(response_files) == 0: # no files
+                            text_value = escape_markdownv2(text_value)
+                            await context.bot.send_message(
+                                chat_id = update.effective_chat.id,
+                                text = text_value,
+                                parse_mode = 'MarkdownV2'
+                                )
+                        else: # with files
+                            for i in range(len(response_files)):
+                                text_value = text_value.replace(
+                                    response_files[i]["placeholder_text"],
+                                    response_files[i]["file_name"]
+                                    )
+                            text_value = escape_markdownv2(text_value)
+                            await context.bot.send_message(
+                                chat_id = update.effective_chat.id,
+                                text = text_value,
+                                parse_mode = 'MarkdownV2'
+                                )
+                            for response_file in response_files:
+                                await context.bot.send_document(
+                                    chat_id = update.effective_chat.id,
+                                    document = response_file["file_content"],
+                                    filename = response_file["file_name"]
+                                )
+                        return
+                    # elif it is an image
+                    elif content["type"] == "image_file":
+                        await context.bot.send_document(
+                            chat_id = update.effective_chat.id,
+                            document = io.BytesIO(content["file_content"]),
+                            filename = content["file_name"]
+                        )
+                        return
+                    elif content["type"] == "thread_killed":
+                        await context.bot.send_message(
+                            chat_id = update.effective_chat.id,
+                            text = "🧹 A new thread has been created."
+                            )
+                        return
+        
+        async def send_typing_action_callback():
+            await context.bot.send_chat_action(
+                chat_id=update.effective_chat.id,
+                action="typing"
+            )
+
         # if group chat
         if update.effective_chat.type == "group" or update.effective_chat.type == "supergroup":
             return
@@ -81,28 +151,29 @@ class TelegramParser:
             )
             return
         
-        # get message
-        message = update.effective_message.text
 
-        # FIXME: sending typing action
-        # await context.bot.send_chat_action(
-        #     chat_id=update.effective_chat.id,
-        #     action="typing"
-        # )
+        if update.message.document: # if it's a file
+            message_text = update.message.caption if update.message.caption else ""
+            telegram_file = await update.message.document.get_file()
+            bytes_io = io.BytesIO()
+            await telegram_file.download_to_memory(out = bytes_io)
+            bytes_io.seek(0)
+            message_document = bytes_io.getvalue()
+            await self.message_manager.get_file_message(
+                str(update.effective_chat.id), 
+                message_text, 
+                message_document,
+                reply_callback, 
+                send_typing_action_callback
+                )
 
-        # get response and send
-        responses = await self.message_manager.get_chat_response(str(update.effective_chat.id), message)
-        for response in responses:
-            # FIXME: Handle Images
-            if response["type"] == "text":
-                escaped_response = escape_markdownv2(response["value"])
-            message = await context.bot.send_message(
-                chat_id = update.effective_chat.id,
-                text = escaped_response,
-                reply_to_message_id = update.effective_message.message_id,
-                allow_sending_without_reply = True,
-                parse_mode = 'MarkdownV2'
-            )
+        else:
+            # get message
+            message = update.effective_message.text
+            # get response and send
+            await self.message_manager.get_text_message(str(update.effective_chat.id), message, reply_callback, send_typing_action_callback)
+        return
+
 
     # chat photos
     async def chat_photo(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -132,11 +203,11 @@ class TelegramParser:
         # )
 
         response = await self.message_manager.get_vision_response(text, photo_url)
-        escaped_response = escape_markdownv2(response)
+        response = escape_markdownv2(response)
 
         await context.bot.send_message(
                 chat_id = update.effective_chat.id,
-                text = escaped_response,
+                text = response,
                 reply_to_message_id = update.effective_message.message_id,
                 allow_sending_without_reply = True,
                 parse_mode = 'MarkdownV2'

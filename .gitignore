@@ -1,5 +1,5 @@
 openai_assistant_id.json
-openai_threads_records.json
+thread_mapping.json
 config.json
 usage
 nohup.out
