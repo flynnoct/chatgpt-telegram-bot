@@ -260,7 +260,7 @@ class TelegramParser:
                 text = "Sorry, you are not allowed to use this bot."
             )
             return
-        self.message_manager.clear_context(str(update.effective_chat.id))
+        self.message_manager.new_thread(str(update.effective_chat.id))
         await context.bot.send_message(
             chat_id = update.effective_chat.id,
             text = "Context cleared."
